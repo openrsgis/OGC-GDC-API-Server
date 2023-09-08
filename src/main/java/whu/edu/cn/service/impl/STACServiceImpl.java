@@ -164,8 +164,11 @@ public class STACServiceImpl implements ISTACService {
         String crsCode = cube.getCrs();
         SpatialExtent spatialExtent = new SpatialExtent(bbox, geoUtil.getCRSHref(crsCode));
         List<List<String>> interval = new ArrayList<>();
-        interval.add(Arrays.asList(cube.getStartTime(), cube.getEndTime()));
-        TemporalExtent temporalExtent = new TemporalExtent(interval);
+        TemporalExtent temporalExtent = null;
+        if(!(cube.getStartTime() == null || cube.getStartTime().contains("1978-01-01"))){
+            interval.add(Arrays.asList(cube.getStartTime(), cube.getEndTime()));
+            temporalExtent = new TemporalExtent(interval);
+        }
         Extent extent = new Extent(spatialExtent, temporalExtent);
         List<Link> links = new ArrayList<>();
         links.add(new Link(stacApiUrl + "/", "root", "application/json",
@@ -207,10 +210,12 @@ public class STACServiceImpl implements ISTACService {
             collectionSummaries.setBands(bandSummaries);
         }
         collectionSummaries.setEpsg(java.util.Collections.singletonList(Integer.valueOf(cube.getCrs().replace("EPSG:", ""))));
-        CollectionSummaryStats datetime = new CollectionSummaryStats();
-        datetime.setMinimum(timeUtil.convertTime2Standard(cube.getStartTime()));
-        datetime.setMaximum(timeUtil.convertTime2Standard(cube.getEndTime()));
-        collectionSummaries.setDatetime(datetime);
+        if(!(cube.getStartTime() == null || cube.getStartTime().contains("1978-01-01"))){
+            CollectionSummaryStats datetime = new CollectionSummaryStats();
+            datetime.setMinimum(timeUtil.convertTime2Standard(cube.getStartTime()));
+            datetime.setMaximum(timeUtil.convertTime2Standard(cube.getEndTime()));
+            collectionSummaries.setDatetime(datetime);
+        }
         simpleCollection.setSummaries(collectionSummaries);
         return simpleCollection;
     }
@@ -231,13 +236,13 @@ public class STACServiceImpl implements ISTACService {
         DimensionSpatial yDimensionSpatial = new DimensionSpatial(DimensionSpatial.AxisEnum.Y, yExtent, null, null, null, Integer.parseInt(cube.getCrs().replace("EPSG:", "")));
         dimensionMap.put("y", yDimensionSpatial);
 
-        List<String> temporalExtent = new ArrayList<>();
-        temporalExtent.add(cube.getStartTime());
-        temporalExtent.add(cube.getEndTime());
-        DimensionTemporal dimensionTemporal = new DimensionTemporal(null, temporalExtent, null);
-        dimensionMap.put("t", dimensionTemporal);
-
-
+        if(!(cube.getStartTime() == null || cube.getStartTime().contains("1978-01-01"))){
+            List<String> temporalExtent = new ArrayList<>();
+            temporalExtent.add(cube.getStartTime());
+            temporalExtent.add(cube.getEndTime());
+            DimensionTemporal dimensionTemporal = new DimensionTemporal(null, temporalExtent, null);
+            dimensionMap.put("t", dimensionTemporal);
+        }
         List<GcMeasurementProduct> measurementProducts = gcMeasurementProductView.getMeasurementProducts(cube.getMeasurementsProductViewName());
         List<String> bands = new ArrayList<>();
         for (GcMeasurementProduct measurementProduct : measurementProducts) {
@@ -282,15 +287,15 @@ public class STACServiceImpl implements ISTACService {
      */
     public Map<String, Property> getQueryablesProperties(GcCube cube) {
         Map<String, Property> propertyMap = new HashMap<>();
-
-        Property timeProperty = new Property();
-        timeProperty.setType("string");
-        timeProperty.setTitle("Phenomenon time");
-        timeProperty.setMinimum(cube.getStartTime());
-        timeProperty.setMaximum(cube.getEndTime());
-        timeProperty.setPattern("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$");
-        propertyMap.put("phenomenon_time", timeProperty);
-
+        if(!(cube.getStartTime() == null || cube.getStartTime().contains("1978-01-01"))){
+            Property timeProperty = new Property();
+            timeProperty.setType("string");
+            timeProperty.setTitle("Phenomenon time");
+            timeProperty.setMinimum(cube.getStartTime());
+            timeProperty.setMaximum(cube.getEndTime());
+            timeProperty.setPattern("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$");
+            propertyMap.put("phenomenon_time", timeProperty);
+        }
         List<GcMeasurementProduct> measurementProducts = gcMeasurementProductView.getMeasurementProducts(cube.getMeasurementsProductViewName());
         Property bandProperty = new Property();
         bandProperty.setTitle("Measurement");

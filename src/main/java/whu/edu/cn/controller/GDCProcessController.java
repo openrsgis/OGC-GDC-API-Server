@@ -30,19 +30,7 @@ import whu.edu.cn.util.FileUtil;
 import whu.edu.cn.util.RedisUtil;
 
 /**
- * OGC API - Processes.
- * <p>
- * Allows for processing tools to be called and
- * combined from many sources and applied to data
- * in other OGC API resources though a simple API.
- * <p>
- * Add process:
- * (1) add process to List<ProcessDesc> getProcesses();
- * (2) add process description to resource/processDescription/ as *.json
- * (3) add request body to resource/processRequest as *.json
- * (4) add custom results json to List<Object> getResults
- * <p>
- * Note: support literal input for now
+ * OGC API - Processes - Part1/Part3.
  */
 @Api(tags = "GDC API - Data Process: OGC API - Processes - Part1/Part3")
 @Slf4j
@@ -167,6 +155,7 @@ public class GDCProcessController {
             String tempCollection = "temp_" + jobId;
             redisUtil.saveKeyValue(tempCollection, JSON.toJSONString(processRequestBody), 60 * 60 * 24);
             return ResponseEntity.status(302).header("Location", address.getGdcApiUrl() + "/collections/" + tempCollection).build();
+//            return ResponseEntity.status(302).header("Location", "http://125.220.153.26:8386/geocube/gdc_api_t19" + "/collections/" + tempCollection).build();
         } else {
             return ResponseEntity.status(500).body("Illegal parameter 'response'!");
         }

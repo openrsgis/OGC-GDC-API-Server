@@ -1,7 +1,9 @@
 package whu.edu.cn.entity.process;
 
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.annotation.JSONField;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Field;
@@ -32,6 +34,8 @@ public class Schema {
     /**
      * 枚举 表示只能从列出的枚举中选择数据
      */
+    @JsonProperty("enum")
+    @JSONField(name = "enum")
     private List<Object> enumList;
     /**
      * 满足列出的schema列表中的一个即可

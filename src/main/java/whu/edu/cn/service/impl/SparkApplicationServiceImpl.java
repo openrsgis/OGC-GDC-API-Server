@@ -213,6 +213,7 @@ public class SparkApplicationServiceImpl implements ISparkApplicationService {
         livyUtil.livyTrigger(code, jobID, functionName);
     }
 
+    @Override
     @Async
     public void submitGDCWorkflowByLivy(String jobID, String functionName, String paramJson,
                                         String outputDir, String isCollection, String collectionParam){

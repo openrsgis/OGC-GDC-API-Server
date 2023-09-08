@@ -407,14 +407,15 @@ public class GcCubeServiceImpl implements IGcCubeService {
         generalGrid.setType("GeneralGridCoverage");
         String crsCode = cube.getCrs();
         generalGrid.setSrsName(geoUtil.getCRSHref(crsCode));
-        List<String> usedAxisLabels = new ArrayList<>(Arrays.asList("Lon", "Lat", "time"));
+        List<String> usedAxisLabels = new ArrayList<>(Arrays.asList("Lon", "Lat"));
         Double resolution = cube.getCellSize() / cube.getCellRes();
         AxisInfo axisInfoLong = new AxisInfo("RegularAxis", "Lon", cube.getLeftBottomLongitude(),
                 cube.getRightTopLongitude(), resolution, "deg");
         AxisInfo axisInfoLat = new AxisInfo("RegularAxis", "Lat", cube.getLeftBottomLatitude(),
                 cube.getRightTopLatitude(), resolution, "deg");
         List<AxisInfo> generalGridAxis = new ArrayList<>(Arrays.asList(axisInfoLong, axisInfoLat));
-        if (!(cube.getStartTime() == null || cube.getEndTime() == null || cube.getCubeName().contains("ECMWF"))) {
+        if (!(cube.getStartTime() == null || cube.getStartTime().contains("1978-01-01") || cube.getEndTime() == null || cube.getCubeName().contains("ECMWF"))) {
+            usedAxisLabels.add("time");
             AxisInfo axisInfoTime = new AxisInfo("RegularAxis", "time", timeUtil.convertTime2Standard(cube.getStartTime()),
                     timeUtil.convertTime2Standard(cube.getEndTime()), 1, "s");
             generalGridAxis.add(axisInfoTime);
@@ -437,7 +438,7 @@ public class GcCubeServiceImpl implements IGcCubeService {
         AxisInfo axisInfoJ = new AxisInfo("IndexAxis", "j", 0,
                 (double) Math.round((cube.getRightTopLongitude() - cube.getLeftBottomLongitude()) / cube.getCellSize() * cube.getCellRes()));
         List<AxisInfo> gridLimitGridAxis = new ArrayList<>(Arrays.asList(axisInfoI, axisInfoJ));
-        if (!(cube.getStartTime() == null || cube.getEndTime() == null || cube.getCubeName().contains("ECMWF"))) {
+        if (!(cube.getStartTime() == null || cube.getStartTime().contains("1978-01-01") || cube.getEndTime() == null || cube.getCubeName().contains("ECMWF"))) {
             Instant startInstant = Instant.parse(timeUtil.convertTime2Standard(cube.getStartTime()));
             Instant endInstant = Instant.parse(timeUtil.convertTime2Standard(cube.getEndTime()));
             long secondsBetween = ChronoUnit.SECONDS.between(startInstant, endInstant);
@@ -537,7 +538,9 @@ public class GcCubeServiceImpl implements IGcCubeService {
         String dagStr = redisUtil.getValueByKey(collectionId);
         Random random = new Random();
         JSONObject dagObj = GDCTrigger.runMetaAnalysis(dagStr, Integer.toString(random.nextInt()));
+        System.out.println(dagObj.toJSONString());
         ModifyParam modifyParam = dagObj.toJavaObject(ModifyParam.class);
+        System.out.println(modifyParam.toString());
         CollectionInfo collectionInfo = getCollectionByCubeName(modifyParam.getCollection());
         return modifyParam2Collection(collectionId, modifyParam, collectionInfo);
     }

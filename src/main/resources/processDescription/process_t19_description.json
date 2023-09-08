@@ -73,13 +73,13 @@
             {
                 "type": "application/json",
                 "rel": "self",
-                "href": "http://http://oge.whu.edu.cn/geocube/gdc_api_t19/processes/loadCube",
+                "href": "http://oge.whu.edu.cn/geocube/gdc_api_t19/processes/loadCube",
                 "title": "The description of loadCube process"
             },
             {
                 "type": "application/json",
                 "rel": "http://www.opengis.net/def/rel/ogc/1.0/execute",
-                "href": "http://http://oge.whu.edu.cn/geocube/gdc_api_t19/processes/loadCube/execution",
+                "href": "http://oge.whu.edu.cn/geocube/gdc_api_t19/processes/loadCube/execution",
                 "title": "Execution for loadCube process"
             }
         ]

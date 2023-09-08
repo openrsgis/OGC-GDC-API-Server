@@ -51,8 +51,10 @@ mybatis-plus:
 #Port config
 server:
   port: 8190   # deploy
+#  port: 8391   # test
   http:
     port: 8087     # deploy
+#    port: 8386     # test
   ssl:
     key-store: classpath:keystore.p12
     key-store-password: 123456
