@@ -1,0 +1,7 @@
+{
+  "ECMWF_hsvs": "/data/hsvs/",
+  "ECMWF_ht3e": "/data/ht3e/",
+  "SENTINEL-2 Level-2A MSI": "/tb19/SENTINEL/",
+  "Copernicus_EU_DEM": "/data/custom/",
+  "soilgrid_WGS84": "/data/custom/"
+}

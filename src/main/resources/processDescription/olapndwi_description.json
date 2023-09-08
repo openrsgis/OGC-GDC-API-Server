@@ -1,0 +1,128 @@
+{
+  "id": "olapndwi",
+  "title": "olapndwi",
+  "version": "1.0.0",
+  "jobControlOptions": ["async-execute"],
+  "outputTransmission": ["value", "reference"],
+  "inputs": [
+    {
+      "id": "cubeId",
+      "title": "cube ID",
+      "input": {
+        "literalDataDomain": {
+          "dataType": {
+            "cubeId": "string"
+          },
+          "valueDefinition": {
+            "anyValue": true
+          }
+        }
+      },
+      "minOccurs": 1,
+      "maxOccurs": 1
+    },
+    {
+      "id": "rasterProductName",
+      "title": "raster input",
+      "input": {
+        "literalDataDomain": {
+          "dataType": {
+            "rasterProductName": "string"
+          },
+          "valueDefinition": {
+            "anyValue": true
+          }
+        }
+      },
+      "minOccurs": 1,
+      "maxOccurs": 1
+    },
+    {
+      "id": "cityName",
+      "title": "cityName",
+      "input": {
+        "literalDataDomain": {
+          "dataType": {
+            "cityName": "string"
+          },
+          "valueDefinition": {
+            "anyValue": true
+          }
+        }
+      },
+      "minOccurs": 1,
+      "maxOccurs": 1
+    },
+    {
+      "id": "provinceName",
+      "title": "provinceName",
+      "input": {
+        "literalDataDomain": {
+          "dataType": {
+            "provinceName": "string"
+          },
+          "valueDefinition": {
+            "anyValue": true
+          }
+        }
+      },
+      "minOccurs": 1,
+      "maxOccurs": 1
+    },
+    {
+      "id": "month",
+      "title": "month",
+      "input": {
+        "literalDataDomain": {
+          "dataType": {
+            "month": "string"
+          },
+          "valueDefinition": {
+            "anyValue": true
+          }
+        }
+      },
+      "minOccurs": 1,
+      "maxOccurs": 1
+    },
+    {
+      "id": "year",
+      "title": "year",
+      "input": {
+        "literalDataDomain": {
+          "dataType": {
+            "year": "string"
+          },
+          "valueDefinition": {
+            "anyValue": true
+          }
+        }
+      },
+      "minOccurs": 1,
+      "maxOccurs": 1
+    }],
+  "outputs": [
+    {
+      "id": "complexOutput",
+      "title": "complexOutput",
+      "output": {
+        "formats": [{
+          "default": true,
+          "mimeType": "application/xml"
+        },
+          {
+            "mimeType": "application/xml"
+          },
+          {
+            "mimeType": "text/xml"
+          }]
+      }
+    }],
+  "links": [
+    {
+      "href": "http://125.220.153.26:8091/geocube/processes_api/processes/olapndwi/jobs",
+      "rel": "execute",
+      "title": "OLAP NDWI Execute endpoint"
+    }
+  ]
+}

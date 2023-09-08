@@ -1,0 +1,156 @@
+#Data source config
+spring:
+  application:
+    name: geocube-boot
+  servlet:
+    multipart:
+      max-file-size: 2000MB
+      max-request-size: 2000MB
+  datasource:
+    username: oge
+    password: ypfamily608
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://125.220.153.23:30865/oge
+    type: com.alibaba.druid.pool.DruidDataSource
+    initialSize: 5
+    minIdle: 5
+    maxActive: 20
+    maxWait: 60000
+    timeBetweenEvictionRunsMillis: 60000
+    minEvictableIdleTimeMillis: 300000
+    validationQuery: SELECT 'x'
+    testWhileIdle: true
+    testOnBorrow: false
+    testOnReturn: false
+    poolPreparedStatements: true
+    filters: stat,wall,log4j
+    maxPoolPreparedStatementPerConnectionSize: 20
+    useGlobalDataSourceStat: true
+    connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=500
+  redis:
+    database: 0
+    host: 125.220.153.26
+    lettuce:
+      pool:
+        max-active: 8   #最大连接数据库连接数,设 0 为没有限制
+        max-idle: 8     #最大等待连接中的数量,设 0 为没有限制
+        max-wait: -1ms  #最大建立连接等待时间。如果超过此时间将接到异常。设为-1表示无限制。
+        min-idle: 0     #最小等待连接中的数量,设 0 为没有限制
+      shutdown-timeout: 100ms
+    password: 'ypfamily608'
+    port: 6379
+
+mybatis:
+  configuration:
+    mapUnderscoreToCamelCase: true
+  mapper-locations: classpath*:whu/edu/cn/**/xml/*Mapper.xml
+
+mybatis-plus:
+  mapper-locations: classpath*:whu/edu/cn/**/xml/*Mapper.xml
+
+#Port config
+server:
+  port: 8190   # deploy
+  http:
+    port: 8087     # deploy
+  ssl:
+    key-store: classpath:keystore.p12
+    key-store-password: 123456
+    keyStoreType: PKCS12
+    keyAlias: tomcat
+
+#Spark application submit parameters
+sparkappparas:
+  sparkHome: /home/geocube/spark
+  master: spark://192.168.0.203:7077
+  mainClass:
+        maps:
+          max: whu.edu.cn.application.dapa.MaxAggregate
+          min: whu.edu.cn.application.dapa.MinAggregate
+          mean: whu.edu.cn.application.dapa.MeanAggregate
+          timeseries: whu.edu.cn.application.dapa.TimeSeriesAggregate
+          value: whu.edu.cn.application.dapa.ValueAggregate
+          ndwi: whu.edu.cn.application.spetralindices.NDWI
+          ndvi: whu.edu.cn.application.spetralindices.NDVI
+          ndbi: whu.edu.cn.application.spetralindices.NDBI
+          mndwi: whu.edu.cn.application.spetralindices.MNDWI
+          slope: whu.edu.cn.application.spetralindices.Slope
+          aspect: whu.edu.cn.application.spetralindices.Aspect
+          wofs: whu.edu.cn.application.timeseries.WOfS
+          waterChangeDetection: whu.edu.cn.application.timeseries.WaterChangeDetection
+          vegetationChangeDetection: whu.edu.cn.application.timeseries.VegetationChangeDetection
+          flood: whu.edu.cn.application.conjoint.Flood
+          olapndwi: whu.edu.cn.application.spetralindices.OLAPNDWI
+          dapaCube: whu.edu.cn.application.dapa.Cube
+          dapaArea: whu.edu.cn.application.dapa.Area
+          dapaTimeseriesArea: whu.edu.cn.application.dapa.TimeseriesArea
+          dapaTimeseriesPosition: whu.edu.cn.application.dapa.TimeseriesPosition
+          dapaValueArea: whu.edu.cn.application.dapa.ValueArea
+          dapaValuePosition: whu.edu.cn.application.dapa.ValuePosition
+          gdcRasterCell: whu.edu.cn.application.gdc.RasterCells
+          gdcCube: whu.edu.cn.application.gdc.RasterCube
+          gdcArea: whu.edu.cn.application.gdc.RasterArea
+          gdcTimeseriesArea: whu.edu.cn.application.gdc.RasterTimeseriesArea
+          gdcTimeseriesPosition: whu.edu.cn.application.gdc.RasterTimeseriesPosition
+          gdcValueArea: whu.edu.cn.application.gdc.RasterValueArea
+          gdcValuePosition: whu.edu.cn.application.gdc.RasterValuePosition
+          gdcTrigger: whu.edu.cn.application.gdc.GDCTrigger
+          gdcCoverage: whu.edu.cn.application.gdc.gdcCoverage
+  jarPath:
+      javaHome: /home/geocube/jdk1.8.0_131/
+      maps:
+#        geocube-core: /home/geocube/kernel/geocube-core/tb19/geocube-core.jar
+        geocube-core: /home/geocube/tb19/kernel/geocube-core.jar
+        param-txt: /home/geocube/tb19/kernel/params.txt
+  deployMode: client
+  rpcMessageMaxSize: 1024
+  kryoserializerBufferMax: 512m
+  sparkDriverMaxResultSize: 8g
+  driverCores: 1
+  driverMemory: 2G
+  executorMemory: 8G
+  executorCores: 8
+  totalExecutorCores: 32
+  totalExecutorMemory: 32g
+
+#Some constant addresses
+address:
+  localDataRoot: /home/geocube/tomcat8/apache-tomcat-8.5.57/webapps/data/gdc_api/
+  processApiUrl: http://oge.whu.edu.cn/geocube/gdc_api_t19
+  coverageApiUrl: http://125.220.153.26:${server.http.port}/geocube/gdc_api_t19
+  dapaApiUrl: http://125.220.153.26:${server.http.port}/geocube/dapa_api
+  gdcApiUrl: http://oge.whu.edu.cn/geocube/gdc_api_t19
+  stacApiUrl: http://oge.whu.edu.cn/geocube/gdc_api_t19
+
+table-prefix:
+  dimension: gc_dimension_
+  product: gc_product_
+  extent: gc_extent_
+  measurement: gc_product_measurement_
+  raster_fact: gc_raster_tile_fact_
+  vector_fact: gc_vector_tile_fact_
+  raster_hbase: hbase_raster_regions_tb19_
+  vector_hbase: hbase_vector_rgions_tb19_
+  sensor_level_product_view: SensorLevelAndProduct_
+  measurement_product_view: MeasurementsAndProduct_
+  level_extent_view: LevelAndExtent_
+
+sh:
+  createHbase: /mnt/storage/geocube/geocube/environment_test/Geois_BatchTiling_jar/shelltest/create_hbase_table.sh
+  dropHbase: /mnt/storage/geocube/geocube/environment_test/Geois_BatchTiling_jar/shelltest/drop_hbase_table.sh
+
+hadoop:
+  confDir: /home/geocube/hadoop/etc/hadoop
+hdfs:
+  master: hdfs://gisweb1:9000
+
+livy:
+  host: 125.220.153.26
+  port: 19101
+  url: http://125.220.153.26:19101
+  user: geocube
+  password: ypfamily608
+  sessionNumber: 1
+
+
+

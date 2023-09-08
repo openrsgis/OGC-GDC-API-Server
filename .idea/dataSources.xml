@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
+    <data-source source="LOCAL" name="26_geocube" uuid="e5d15bd6-b468-49f8-b5fc-0e0139a8efc9">
+      <driver-ref>postgresql</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
+      <jdbc-url>jdbc:postgresql://125.220.153.26:5432/geocube</jdbc-url>
+    </data-source>
+    <data-source source="LOCAL" name="26_multigeocube" uuid="ed917b7a-9bf8-468f-a9e1-d7cdd554799e">
+      <driver-ref>postgresql</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
+      <jdbc-url>jdbc:postgresql://125.220.153.26:5432/multigeocube</jdbc-url>
+    </data-source>
+    <data-source source="LOCAL" name="multigeocube@172.20.20.9" uuid="44cc4674-f9c5-4087-9f52-cdd47e6d18ca">
+      <driver-ref>postgresql</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
+      <jdbc-url>jdbc:postgresql://172.20.20.9:25432/multigeocube</jdbc-url>
+    </data-source>
+    <data-source source="LOCAL" name="multigeocube@172.20.20.15" uuid="4dc3531f-b434-411c-ab4c-ef4dcfbd3a2c">
+      <driver-ref>postgresql</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
+      <jdbc-url>jdbc:postgresql://172.20.20.15:5432/multigeocube</jdbc-url>
+    </data-source>
+    <data-source source="LOCAL" name="26_whugeocube" uuid="0748e180-4097-4094-8ec0-541d06bc9b75">
+      <driver-ref>postgresql</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
+      <jdbc-url>jdbc:postgresql://125.220.153.26:5432/whugeocube</jdbc-url>
+    </data-source>
+    <data-source source="LOCAL" name="26_geocube_postgres" uuid="2aacb44e-1e7c-4943-a1f2-72ddf364a44d">
+      <driver-ref>postgresql</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
+      <jdbc-url>jdbc:postgresql://125.220.153.26:5432/geocube</jdbc-url>
+    </data-source>
+  </component>
+</project>

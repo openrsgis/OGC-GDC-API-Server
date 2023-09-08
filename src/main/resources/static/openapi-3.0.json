@@ -1,0 +1,2462 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "GeoCube Web API Documentation",
+    "description": "This is a GeoCube API documentation",
+    "contact": {
+      "name": "Kaixuan Wang(WHU)",
+      "email": "wangkaixuan@whu.edu.cn"
+    },
+    "version": "v1.0"
+  },
+  "servers": [
+    {
+      "description": "Open Geospatial Engine Server",
+      "url": "http://oge.whu.edu.cn/"
+    }
+  ],
+  "tags": [
+    {
+      "name": "GDC API - Data Access: STAC API/OGC API - Coverages",
+      "description": "GDC API for Data Access"
+    },
+    {
+      "name": "GDC API - Data Process: OGC API - Processes - Part1/Part3",
+      "description": "GDC API for Process"
+    }
+  ],
+  "paths": {
+    "/geocube/gdc_api_t19/": {
+      "get": {
+        "tags": [
+          "GDC API - Data Access: STAC API/OGC API - Coverages"
+        ],
+        "summary": "Backend information",
+        "description": "Backend information",
+        "operationId": "getBackendInfoUsingGET",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/BackendInfo"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {}
+          }
+        }
+      }
+    },
+    "/geocube/gdc_api_t19/collections": {
+      "get": {
+        "tags": [
+          "GDC API - Data Access: STAC API/OGC API - Coverages"
+        ],
+        "summary": "Collections provided",
+        "description": "Collections list",
+        "operationId": "getCollectionsUsingGET",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Collections"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {}
+          }
+        }
+      }
+    },
+    "/geocube/gdc_api_t19/collections/{collectionId}": {
+      "get": {
+        "tags": [
+          "GDC API - Data Access: STAC API/OGC API - Coverages"
+        ],
+        "summary": "Collection provided",
+        "description": "Get the description of a certain collection. Collection is used to describe the descriptive information of a Cube and supports the STAC Cube Extension.",
+        "operationId": "getCollectionUsingGET",
+        "parameters": [
+          {
+            "name": "collectionId",
+            "in": "path",
+            "description": "collectionId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {}
+          }
+        }
+      }
+    },
+    "/geocube/gdc_api_t19/collections/{collectionId}/coverage": {
+      "get": {
+        "tags": [
+          "GDC API - Data Access: STAC API/OGC API - Coverages"
+        ],
+        "summary": "Return the coverage",
+        "description": "Return the coverage. It is highly recommended to include relevant selection parameters such as bbox, datetime, properties, or subset when retrieving data using the this endpoint to reduce unnecessary data retrieval. When no selection parameters are provided, a predefined preview image will be returned. When specifying the file type to be `tif`, if the filtered results yield time-series data or have multiple dimension members in other dimensions(except the band dimension), only the first matching data will be returned. Files downloaded through Swagger may sometimes be unable to open. This is due to a bug in Swagger itself. To overcome this issue, you can test this endpoint using a browser or tools like Postman to view the data.",
+        "operationId": "getCoverageUsingGET",
+        "parameters": [
+          {
+            "name": "bbox",
+            "in": "query",
+            "description": "Spatial bounding box with format 'minx,miny,maxx,maxy', eg. 0,35,40,70",
+            "schema": {
+              "type": "string"
+            },
+            "example": "0,35,40,70"
+          },
+          {
+            "name": "collectionId",
+            "in": "path",
+            "description": "collectionId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "ECMWF_ht3e"
+          },
+          {
+            "name": "datetime",
+            "in": "query",
+            "description": "Temporal extent is specified by RFC 3339, eg. 2016-10-28T00:01:00Z/2016-10-28T01:01:00Z",
+            "schema": {
+              "type": "string"
+            },
+            "example": "2016-10-28T01:01:00Z/2016-10-28T02:01:00Z"
+          },
+          {
+            "name": "f",
+            "in": "query",
+            "description": "The format of the output, only support tif and netcdf",
+            "schema": {
+              "type": "string",
+              "default": "tif"
+            },
+            "example": "tif"
+          },
+          {
+            "name": "properties",
+            "in": "query",
+            "description": "Supports cube cutting or slicing through band filtering",
+            "schema": {
+              "type": "string"
+            },
+            "example": "Divergence"
+          },
+          {
+            "name": "scale-axes",
+            "in": "query",
+            "description": "Scale-axes",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "scale-factor",
+            "in": "query",
+            "description": "Scale-factor, number",
+            "schema": {
+              "type": "number",
+              "format": "double"
+            }
+          },
+          {
+            "name": "scale-size",
+            "in": "query",
+            "description": "Scale-size",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "subset",
+            "in": "query",
+            "description": "Supports cube cutting or slicing through dimensional filtering",
+            "schema": {
+              "type": "string"
+            },
+            "example": "pressure(1000)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object"
+                }
+              },
+              "application/octet-stream": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {}
+          }
+        }
+      }
+    },
+    "/geocube/gdc_api_t19/collections/{collectionId}/coverage/domainset": {
+      "get": {
+        "tags": [
+          "GDC API - Data Access: STAC API/OGC API - Coverages"
+        ],
+        "summary": "Domainset of a coverage",
+        "description": "Domainset of a coverage",
+        "operationId": "getCoverageDomainSetUsingGET",
+        "parameters": [
+          {
+            "name": "collectionId",
+            "in": "path",
+            "description": "collectionId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/DomainSet"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {}
+          }
+        }
+      }
+    },
+    "/geocube/gdc_api_t19/collections/{collectionId}/coverage/rangeset": {
+      "get": {
+        "tags": [
+          "GDC API - Data Access: STAC API/OGC API - Coverages"
+        ],
+        "summary": "Return the coverage",
+        "description": "Return the coverage. It is highly recommended to include relevant selection parameters such as bbox, datetime, properties, or subset when retrieving data using the this endpoint to reduce unnecessary data retrieval. When no selection parameters are provided, a predefined preview image will be returned. When specifying the file type to be `tif`, if the filtered results yield time-series data or have multiple dimension members in other dimensions(except the band dimension), only the first matching data will be returned. Files downloaded through Swagger may sometimes be unable to open. This is due to a bug in Swagger itself. To overcome this issue, you can test this endpoint using a browser or tools like Postman to view the data.",
+        "operationId": "getCoverageRangeSetUsingGET",
+        "parameters": [
+          {
+            "name": "bbox",
+            "in": "query",
+            "description": "Spatial bounding box in String format 'minx,miny,maxx,maxy', eg. 0,35,40,70",
+            "schema": {
+              "type": "string"
+            },
+            "example": "0,35,40,70"
+          },
+          {
+            "name": "collectionId",
+            "in": "path",
+            "description": "collectionId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "ECMWF_ht3e"
+          },
+          {
+            "name": "datetime",
+            "in": "query",
+            "description": "Temporal extent is specified by RFC 3339, eg. 2016-10-28T00:01:00Z/2016-10-28T01:01:00Z",
+            "schema": {
+              "type": "string"
+            },
+            "example": "2016-10-28T01:01:00Z/2016-10-28T02:01:00Z"
+          },
+          {
+            "name": "f",
+            "in": "query",
+            "description": "The format of the output, only support tif and netcdf",
+            "schema": {
+              "type": "string",
+              "default": "tif"
+            },
+            "example": "tif"
+          },
+          {
+            "name": "properties",
+            "in": "query",
+            "description": "Supports cube cutting or slicing through band filtering",
+            "schema": {
+              "type": "string"
+            },
+            "example": "Divergence"
+          },
+          {
+            "name": "scale-axes",
+            "in": "query",
+            "description": "Scale-axes",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "scale-factor",
+            "in": "query",
+            "description": "Scale-factor, number",
+            "schema": {
+              "type": "number",
+              "format": "double"
+            }
+          },
+          {
+            "name": "scale-size",
+            "in": "query",
+            "description": "Scale-size",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "subset",
+            "in": "query",
+            "description": "Supports cube cutting or slicing through dimensional filtering",
+            "schema": {
+              "type": "string"
+            },
+            "example": "pressure(1000)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {}
+          }
+        }
+      }
+    },
+    "/geocube/gdc_api_t19/collections/{collectionId}/coverage/rangetype": {
+      "get": {
+        "tags": [
+          "GDC API - Data Access: STAC API/OGC API - Coverages"
+        ],
+        "summary": "Rangetype of a coverage",
+        "description": "Rangetype of a coverage",
+        "operationId": "getCoverageRangetypeUsingGET",
+        "parameters": [
+          {
+            "name": "collectionId",
+            "in": "path",
+            "description": "collectionId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/RangeType"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {}
+          }
+        }
+      }
+    },
+    "/geocube/gdc_api_t19/collections/{collectionId}/items": {
+      "get": {
+        "tags": [
+          "GDC API - Data Access: STAC API/OGC API - Coverages"
+        ],
+        "summary": "Collection items provided",
+        "description": "STAC items list. Item corresponds to the metadata of a scene resulting from combining one dimension member from each dimension of the Cube (except the spatial dimension). This scene serves as an asset for external access.This endpoint supports dimension queries using cql2, but it only supports `cql-text` encoding",
+        "operationId": "getCollectionItemsUsingGET_1",
+        "parameters": [
+          {
+            "name": "bbox",
+            "in": "query",
+            "description": "Spatial bounding box with format 'minx,miny,maxx,maxy'",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "collectionId",
+            "in": "path",
+            "description": "collectionId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "datetime",
+            "in": "query",
+            "description": "Temporal extent is specified by RFC 3339, eg. 2016-10-28T00:01:00Z/2016-10-28T01:01:00Z",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "filter",
+            "in": "query",
+            "description": "CQL2",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "filter-lang",
+            "in": "query",
+            "description": "filter-lang",
+            "schema": {
+              "type": "string",
+              "default": "cql-text"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "limit",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/STACItems"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {}
+          }
+        }
+      }
+    },
+    "/geocube/gdc_api_t19/collections/{collectionId}/items/{featureId}": {
+      "get": {
+        "tags": [
+          "GDC API - Data Access: STAC API/OGC API - Coverages"
+        ],
+        "summary": "A certain collection item provided",
+        "description": "Get a certain STAC item. Item corresponds to the metadata of a scene resulting from combining one dimension member from each dimension of the Cube (except the spatial dimension). This scene serves as an asset for external access.",
+        "operationId": "getCollectionItemsUsingGET",
+        "parameters": [
+          {
+            "name": "collectionId",
+            "in": "path",
+            "description": "collectionId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "featureId",
+            "in": "path",
+            "description": "featureId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/STACItem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {}
+          }
+        }
+      }
+    },
+    "/geocube/gdc_api_t19/collections/{collectionId}/queryables": {
+      "get": {
+        "tags": [
+          "GDC API - Data Access: STAC API/OGC API - Coverages"
+        ],
+        "summary": "Queryables provided",
+        "description": "Get queryable items of the collection. The dimensions of the Cube are available as queryable items.",
+        "operationId": "getCollectionQueryablesUsingGET",
+        "parameters": [
+          {
+            "name": "collectionId",
+            "in": "path",
+            "description": "collectionId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Queryables"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {}
+          }
+        }
+      }
+    },
+    "/geocube/gdc_api_t19/conformance": {
+      "get": {
+        "tags": [
+          "GDC API - Data Access: STAC API/OGC API - Coverages"
+        ],
+        "summary": "Conformance",
+        "description": "Conformance",
+        "operationId": "getConformanceUsingGET",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Conformance"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {}
+          }
+        }
+      }
+    },
+    "/geocube/gdc_api_t19/processes": {
+      "get": {
+        "tags": [
+          "GDC API - Data Process: OGC API - Processes - Part1/Part3"
+        ],
+        "summary": "Processes provided",
+        "description": "Processes list",
+        "operationId": "getProcessesUsingGET",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProcessesDesc"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {}
+          }
+        }
+      }
+    },
+    "/geocube/gdc_api_t19/processes/{processId}": {
+      "get": {
+        "tags": [
+          "GDC API - Data Process: OGC API - Processes - Part1/Part3"
+        ],
+        "summary": "Process description",
+        "description": "Process description",
+        "operationId": "getProcessDescriptionUsingGET",
+        "parameters": [
+          {
+            "name": "processId",
+            "in": "path",
+            "description": "processId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProcessDesc"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {}
+          }
+        }
+      }
+    },
+    "/geocube/gdc_api_t19/processes/{processId}/execution": {
+      "post": {
+        "tags": [
+          "GDC API - Data Process: OGC API - Processes - Part1/Part3"
+        ],
+        "summary": "Execute a process",
+        "description": "Return the job information. When `response = collection`, it redirects to the `/collections/{collectionId}` endpoint of OGC API-Coverages",
+        "operationId": "executeUsingPOST",
+        "parameters": [
+          {
+            "name": "processId",
+            "in": "path",
+            "description": "processId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "response",
+            "in": "query",
+            "description": "response",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "processRequestBody",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProcessRequestBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
+            "content": {}
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {}
+          }
+        },
+        "x-codegen-request-body-name": "processRequestBody"
+      }
+    },
+    "/geocube/gdc_api_t19/processes/{processId}/jobs/{jobId}": {
+      "get": {
+        "tags": [
+          "GDC API - Data Process: OGC API - Processes - Part1/Part3"
+        ],
+        "summary": "Get the status of a job",
+        "description": "Return the job status",
+        "operationId": "getStatusUsingGET",
+        "parameters": [
+          {
+            "name": "jobId",
+            "in": "path",
+            "description": "jobId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "processId",
+            "in": "path",
+            "description": "processId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {}
+          }
+        }
+      }
+    },
+    "/geocube/gdc_api_t19/processes/{processId}/jobs/{jobId}/results": {
+      "get": {
+        "tags": [
+          "GDC API - Data Process: OGC API - Processes - Part1/Part3"
+        ],
+        "summary": "Get the result of a job",
+        "description": "Return the job result",
+        "operationId": "getResultsUsingGET",
+        "parameters": [
+          {
+            "name": "jobId",
+            "in": "path",
+            "description": "jobId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "processId",
+            "in": "path",
+            "description": "processId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {}
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Asset": {
+        "title": "Asset",
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "href": {
+            "type": "string"
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "title": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        }
+      },
+      "AxisInfo": {
+        "title": "AxisInfo",
+        "type": "object",
+        "properties": {
+          "axisLabel": {
+            "type": "string"
+          },
+          "coordinate": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "lowerBound": {
+            "type": "object",
+            "properties": {}
+          },
+          "resolution": {
+            "type": "number",
+            "format": "double"
+          },
+          "type": {
+            "type": "string"
+          },
+          "uomLabel": {
+            "type": "string"
+          },
+          "upperBound": {
+            "type": "object",
+            "properties": {}
+          }
+        }
+      },
+      "BackendInfo": {
+        "title": "BackendInfo",
+        "type": "object",
+        "properties": {
+          "api_version": {
+            "type": "string"
+          },
+          "backend_version": {
+            "type": "string"
+          },
+          "conformsTo": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "description": {
+            "type": "string"
+          },
+          "endpoints": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Endpoint"
+            }
+          },
+          "gdc_version": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "links": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Link"
+            }
+          },
+          "stac_version": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        }
+      },
+      "BandSummary": {
+        "title": "BandSummary",
+        "type": "object",
+        "properties": {
+          "center_wavelength": {
+            "type": "number",
+            "format": "double"
+          },
+          "common_name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "gsd": {
+            "type": "number",
+            "format": "double"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "description": "A link to another resource on the web. Bases on [RFC 5899](https://tools.ietf.org/html/rfc5988)."
+      },
+      "Collection": {
+        "title": "Collection",
+        "type": "object",
+        "properties": {
+          "assets": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/Asset"
+            }
+          },
+          "cube:dimensions": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/Dimension"
+            }
+          },
+          "deprecated": {
+            "type": "boolean"
+          },
+          "description": {
+            "type": "string"
+          },
+          "extent": {
+            "$ref": "#/components/schemas/Extent"
+          },
+          "id": {
+            "type": "string"
+          },
+          "keywords": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "license": {
+            "type": "string"
+          },
+          "links": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Link"
+            }
+          },
+          "providers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Providers"
+            }
+          },
+          "sci:citation": {
+            "type": "string"
+          },
+          "stac_extensions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "stac_version": {
+            "type": "string"
+          },
+          "summaries": {
+            "$ref": "#/components/schemas/CollectionSummaries"
+          },
+          "title": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          }
+        }
+      },
+      "CollectionSummaries": {
+        "title": "CollectionSummaries",
+        "required": [
+          "columns",
+          "constellation",
+          "eo:bands",
+          "eo:cloud_cover",
+          "gsd",
+          "instruments",
+          "platform",
+          "proj:epsg",
+          "rows",
+          "sat:orbit_state"
+        ],
+        "type": "object",
+        "properties": {
+          "columns": {
+            "type": "integer",
+            "description": "The value MUST be a valid Integer.",
+            "format": "int32",
+            "example": 22
+          },
+          "constellation": {
+            "type": "array",
+            "description": "Relationship between the current document and the linked document. SHOULD be a [registered link relation type](https://www.iana.org/assignments/link-relations/link-relations.xml) whenever feasible.",
+            "example": "related",
+            "items": {
+              "type": "string"
+            }
+          },
+          "datetime": {
+            "$ref": "#/components/schemas/CollectionSummaryStats"
+          },
+          "eo:bands": {
+            "type": "array",
+            "description": "The value MUST be a valid URL.",
+            "example": "https://example.openeo.org",
+            "items": {
+              "$ref": "#/components/schemas/BandSummary"
+            }
+          },
+          "eo:cloud_cover": {
+            "$ref": "#/components/schemas/CollectionSummaryStats"
+          },
+          "gsd": {
+            "type": "array",
+            "description": "The value MUST be a valid URL.",
+            "example": "https://example.openeo.org",
+            "items": {
+              "type": "number",
+              "format": "double"
+            }
+          },
+          "instruments": {
+            "type": "array",
+            "description": "The value MUST be a valid URL.",
+            "example": "https://example.openeo.org",
+            "items": {
+              "type": "string"
+            }
+          },
+          "platform": {
+            "type": "array",
+            "description": "The value MUST be a valid String.",
+            "example": "Sentinel-2",
+            "items": {
+              "type": "string"
+            }
+          },
+          "proj:epsg": {
+            "type": "array",
+            "description": "The value MUST be a valid URL.",
+            "example": "https://example.openeo.org",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          "rows": {
+            "type": "integer",
+            "description": "The value MUST be a valid Integer.",
+            "format": "int32",
+            "example": 22
+          },
+          "sat:orbit_state": {
+            "type": "array",
+            "description": "The value MUST be a valid URL.",
+            "example": "https://example.openeo.org",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "description": "A link to another resource on the web. Bases on [RFC 5899](https://tools.ietf.org/html/rfc5988)."
+      },
+      "CollectionSummaryStats": {
+        "title": "CollectionSummaryStats",
+        "type": "object",
+        "properties": {
+          "max": {
+            "type": "number",
+            "format": "double"
+          },
+          "maximum": {
+            "type": "string"
+          },
+          "min": {
+            "type": "number",
+            "format": "double"
+          },
+          "minimum": {
+            "type": "string"
+          }
+        },
+        "description": "By default, only ranges with a minimum and a maximum value can be specified. Ranges can be specified for ordinal values only, which means they need to have a rank order. Therefore, ranges can only be specified for numbers and some special types of strings. Examples: grades (A to F), dates or times. Implementors are free to add other derived statistical values to the object, for example `mean` or `stddev`."
+      },
+      "Collections": {
+        "title": "Collections",
+        "type": "object",
+        "properties": {
+          "collections": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Collection"
+            }
+          },
+          "links": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Link"
+            }
+          }
+        }
+      },
+      "Conformance": {
+        "title": "Conformance",
+        "type": "object",
+        "properties": {
+          "conformsTo": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "Dimension": {
+        "title": "Dimension",
+        "required": [
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string",
+            "description": "Detailed description to explain the entity.  [CommonMark 0.29](http://commonmark.org/) syntax MAY be used for rich text representation."
+          },
+          "type": {
+            "type": "string",
+            "description": "Type of the dimension.",
+            "enum": [
+              "bands",
+              "other",
+              "spatial",
+              "temporal"
+            ]
+          }
+        }
+      },
+      "DimensionBands": {
+        "title": "DimensionBands",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Dimension"
+          },
+          {
+            "title": "DimensionBands",
+            "required": [
+              "type",
+              "values"
+            ],
+            "type": "object",
+            "properties": {
+              "description": {
+                "type": "string",
+                "description": "Detailed description to explain the entity.  [CommonMark 0.29](http://commonmark.org/) syntax MAY be used for rich text representation."
+              },
+              "type": {
+                "type": "string",
+                "description": "Type of the dimension.",
+                "enum": [
+                  "bands",
+                  "other",
+                  "spatial",
+                  "temporal"
+                ]
+              },
+              "values": {
+                "type": "array",
+                "description": "A set of all potential values, especially useful for [nominal](https://en.wikipedia.org/wiki/Level_of_measurement#Nominal_level) values.  **Important:** The order of the values MUST be exactly how the dimension values are also ordered in the data (cube). If the values specify band names, the values MUST be in the same order as they are in the corresponding band fields (i.e. `eo:bands` or `sar:bands`).",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "DimensionOther": {
+        "title": "DimensionOther",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Dimension"
+          },
+          {
+            "title": "DimensionOther",
+            "required": [
+              "type"
+            ],
+            "type": "object",
+            "properties": {
+              "description": {
+                "type": "string",
+                "description": "Detailed description to explain the entity.  [CommonMark 0.29](http://commonmark.org/) syntax MAY be used for rich text representation."
+              },
+              "extent": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                }
+              },
+              "reference_system": {
+                "type": "string"
+              },
+              "step": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "description": "Type of the dimension.",
+                "enum": [
+                  "bands",
+                  "other",
+                  "spatial",
+                  "temporal"
+                ]
+              },
+              "unit": {
+                "type": "string"
+              },
+              "values": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "DimensionSpatial": {
+        "title": "DimensionSpatial",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Dimension"
+          },
+          {
+            "title": "DimensionSpatial",
+            "required": [
+              "axis",
+              "type"
+            ],
+            "type": "object",
+            "properties": {
+              "axis": {
+                "type": "string",
+                "description": "Axis of the spatial dimension (`x`, `y` or `z`).",
+                "enum": [
+                  "x",
+                  "y",
+                  "z"
+                ]
+              },
+              "description": {
+                "type": "string",
+                "description": "Detailed description to explain the entity.  [CommonMark 0.29](http://commonmark.org/) syntax MAY be used for rich text representation."
+              },
+              "extent": {
+                "type": "array",
+                "description": "Extent (lower and upper bounds) of the dimension as two-dimensional array. Open intervals with `null` are not allowed.",
+                "items": {
+                  "type": "number"
+                }
+              },
+              "reference_system": {
+                "type": "integer",
+                "description": "The spatial reference system for the data, specified as [EPSG code](http://www.epsg-registry.org/), [WKT2 (ISO 19162) string](http://docs.opengeospatial.org/is/18-010r7/18-010r7.html) or [PROJ definition (deprecated)](https://proj.org/usage/quickstart.html). Defaults to EPSG code 4326.",
+                "format": "int32"
+              },
+              "step": {
+                "type": "string",
+                "description": "If the dimension consists of [interval](https://en.wikipedia.org/wiki/Level_of_measurement#Interval_scale) values, the space between the values. Use `null` for irregularly spaced steps."
+              },
+              "type": {
+                "type": "string",
+                "description": "Type of the dimension.",
+                "enum": [
+                  "bands",
+                  "other",
+                  "spatial",
+                  "temporal"
+                ]
+              },
+              "unit": {
+                "type": "string"
+              },
+              "values": {
+                "type": "array",
+                "description": "A set of all potential values.",
+                "items": {
+                  "type": "number"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "DimensionTemporal": {
+        "title": "DimensionTemporal",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Dimension"
+          },
+          {
+            "title": "DimensionTemporal",
+            "required": [
+              "extent",
+              "type"
+            ],
+            "type": "object",
+            "properties": {
+              "description": {
+                "type": "string",
+                "description": "Detailed description to explain the entity.  [CommonMark 0.29](http://commonmark.org/) syntax MAY be used for rich text representation."
+              },
+              "extent": {
+                "type": "array",
+                "description": "Extent (lower and upper bounds) of the dimension as two-dimensional array. The dates and/or times must be strings compliant to [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601). `null` is allowed for open date ranges.",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "step": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "description": "Type of the dimension.",
+                "enum": [
+                  "bands",
+                  "other",
+                  "spatial",
+                  "temporal"
+                ]
+              },
+              "values": {
+                "type": "array",
+                "description": "If the dimension consists of set of specific values they can be listed here. The dates and/or times must be strings compliant to [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601).",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "DomainSet": {
+        "title": "DomainSet",
+        "type": "object",
+        "properties": {
+          "generalGrid": {
+            "$ref": "#/components/schemas/GeneralGrid"
+          },
+          "type": {
+            "type": "string"
+          }
+        }
+      },
+      "Endpoint": {
+        "title": "Endpoint",
+        "type": "object",
+        "properties": {
+          "methods": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "path": {
+            "type": "string"
+          }
+        }
+      },
+      "Extent": {
+        "title": "Extent",
+        "type": "object",
+        "properties": {
+          "spatial": {
+            "$ref": "#/components/schemas/SpatialExtent"
+          },
+          "temporal": {
+            "$ref": "#/components/schemas/TemporalExtent"
+          }
+        }
+      },
+      "Feature": {
+        "title": "Feature",
+        "type": "object",
+        "properties": {
+          "geometry": {
+            "$ref": "#/components/schemas/GeoJsonGeometry"
+          },
+          "id": {
+            "type": "string"
+          },
+          "links": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Link"
+            }
+          },
+          "properties": {
+            "type": "object",
+            "properties": {}
+          },
+          "type": {
+            "type": "string"
+          }
+        }
+      },
+      "FieldInfo": {
+        "title": "FieldInfo",
+        "type": "object",
+        "properties": {
+          "definition": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "uom": {
+            "$ref": "#/components/schemas/Uom"
+          }
+        }
+      },
+      "GeneralGrid": {
+        "title": "GeneralGrid",
+        "type": "object",
+        "properties": {
+          "axis": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AxisInfo"
+            }
+          },
+          "axisLabels": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "gridLimits": {
+            "$ref": "#/components/schemas/GridLimits"
+          },
+          "id": {
+            "type": "string"
+          },
+          "srsName": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        }
+      },
+      "GeoJsonGeometry": {
+        "title": "GeoJsonGeometry",
+        "required": [
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "GeometryCollection",
+              "LineString",
+              "MultiLineString",
+              "MultiPoint",
+              "MultiPolygon",
+              "Point",
+              "Polygon"
+            ]
+          }
+        }
+      },
+      "GeoJsonGeometryCollection": {
+        "title": "GeoJsonGeometryCollection",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/GeoJsonGeometry"
+          },
+          {
+            "title": "GeoJsonGeometryCollection",
+            "required": [
+              "geometries",
+              "type"
+            ],
+            "type": "object",
+            "properties": {
+              "geometries": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/GeoJsonGeometry"
+                }
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "GeometryCollection",
+                  "LineString",
+                  "MultiLineString",
+                  "MultiPoint",
+                  "MultiPolygon",
+                  "Point",
+                  "Polygon"
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "GeoJsonLineString": {
+        "title": "GeoJsonLineString",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/GeoJsonGeometry"
+          },
+          {
+            "title": "GeoJsonLineString",
+            "required": [
+              "coordinates",
+              "type"
+            ],
+            "type": "object",
+            "properties": {
+              "coordinates": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  }
+                }
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "GeometryCollection",
+                  "LineString",
+                  "MultiLineString",
+                  "MultiPoint",
+                  "MultiPolygon",
+                  "Point",
+                  "Polygon"
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "GeoJsonMultiLineString": {
+        "title": "GeoJsonMultiLineString",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/GeoJsonGeometry"
+          },
+          {
+            "title": "GeoJsonMultiLineString",
+            "required": [
+              "coordinates",
+              "type"
+            ],
+            "type": "object",
+            "properties": {
+              "coordinates": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "number"
+                    }
+                  }
+                }
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "GeometryCollection",
+                  "LineString",
+                  "MultiLineString",
+                  "MultiPoint",
+                  "MultiPolygon",
+                  "Point",
+                  "Polygon"
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "GeoJsonMultiPoint": {
+        "title": "GeoJsonMultiPoint",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/GeoJsonGeometry"
+          },
+          {
+            "title": "GeoJsonMultiPoint",
+            "required": [
+              "coordinates",
+              "type"
+            ],
+            "type": "object",
+            "properties": {
+              "coordinates": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  }
+                }
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "GeometryCollection",
+                  "LineString",
+                  "MultiLineString",
+                  "MultiPoint",
+                  "MultiPolygon",
+                  "Point",
+                  "Polygon"
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "GeoJsonMultiPolygon": {
+        "title": "GeoJsonMultiPolygon",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/GeoJsonGeometry"
+          },
+          {
+            "title": "GeoJsonMultiPolygon",
+            "required": [
+              "coordinates",
+              "type"
+            ],
+            "type": "object",
+            "properties": {
+              "coordinates": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                }
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "GeometryCollection",
+                  "LineString",
+                  "MultiLineString",
+                  "MultiPoint",
+                  "MultiPolygon",
+                  "Point",
+                  "Polygon"
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "GeoJsonPoint": {
+        "title": "GeoJsonPoint",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/GeoJsonGeometry"
+          },
+          {
+            "title": "GeoJsonPoint",
+            "required": [
+              "coordinates",
+              "type"
+            ],
+            "type": "object",
+            "properties": {
+              "coordinates": {
+                "type": "array",
+                "description": "Point in 3D space",
+                "items": {
+                  "type": "number"
+                }
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "Point"
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "GeoJsonPolygon": {
+        "title": "GeoJsonPolygon",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/GeoJsonGeometry"
+          },
+          {
+            "title": "GeoJsonPolygon",
+            "required": [
+              "coordinates",
+              "type"
+            ],
+            "type": "object",
+            "properties": {
+              "coordinates": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "number"
+                    }
+                  }
+                }
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "GeometryCollection",
+                  "LineString",
+                  "MultiLineString",
+                  "MultiPoint",
+                  "MultiPolygon",
+                  "Point",
+                  "Polygon"
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "GridLimits": {
+        "title": "GridLimits",
+        "type": "object",
+        "properties": {
+          "axis": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AxisInfo"
+            }
+          },
+          "axisLabels": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "id": {
+            "type": "string"
+          },
+          "srsName": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        }
+      },
+      "Input": {
+        "title": "Input",
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "keywords": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "maxOccurs": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "metadata": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "minOccurs": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "schema": {
+            "$ref": "#/components/schemas/Schema"
+          },
+          "title": {
+            "type": "string"
+          }
+        }
+      },
+      "Link": {
+        "title": "Link",
+        "type": "object",
+        "properties": {
+          "href": {
+            "type": "string"
+          },
+          "rel": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        }
+      },
+      "Output": {
+        "title": "Output",
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "keywords": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "metadata": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "schema": {
+            "$ref": "#/components/schemas/Schema"
+          },
+          "title": {
+            "type": "string"
+          }
+        }
+      },
+      "ProcessDesc": {
+        "title": "ProcessDesc",
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "inputs": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/Input"
+            }
+          },
+          "jobControlOptions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "keywords": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "links": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Link"
+            }
+          },
+          "outputTransmission": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "outputs": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/Output"
+            }
+          },
+          "title": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          }
+        }
+      },
+      "ProcessRequestBody": {
+        "title": "ProcessRequestBody",
+        "type": "object",
+        "properties": {
+          "inputs": {
+            "type": "object",
+            "properties": {}
+          },
+          "outputs": {
+            "type": "object",
+            "properties": {}
+          },
+          "process": {
+            "type": "string"
+          },
+          "response": {
+            "type": "string"
+          },
+          "subscriber": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {}
+            }
+          }
+        }
+      },
+      "ProcessesDesc": {
+        "title": "ProcessesDesc",
+        "type": "object",
+        "properties": {
+          "links": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Link"
+            }
+          },
+          "processes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProcessDesc"
+            }
+          }
+        }
+      },
+      "Property": {
+        "title": "Property",
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "enum": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "exclusiveMaximum": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "exclusiveMinimum": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "maximum": {
+            "type": "object",
+            "properties": {}
+          },
+          "minimum": {
+            "type": "object",
+            "properties": {}
+          },
+          "multipleOf": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pattern": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        }
+      },
+      "Providers": {
+        "title": "Providers",
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          }
+        }
+      },
+      "Queryables": {
+        "title": "Queryables",
+        "type": "object",
+        "properties": {
+          "$id": {
+            "type": "string"
+          },
+          "$schema": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": "boolean"
+          },
+          "description": {
+            "type": "string"
+          },
+          "properties": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/Property"
+            }
+          },
+          "title": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        }
+      },
+      "RangeType": {
+        "title": "RangeType",
+        "type": "object",
+        "properties": {
+          "fieldInfoList": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FieldInfo"
+            }
+          },
+          "type": {
+            "type": "string"
+          }
+        }
+      },
+      "STACItem": {
+        "title": "STACItem",
+        "type": "object",
+        "properties": {
+          "assets": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/Asset"
+            }
+          },
+          "bbox": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "geometry": {
+            "$ref": "#/components/schemas/GeoJsonGeometry"
+          },
+          "id": {
+            "type": "string"
+          },
+          "links": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Link"
+            }
+          },
+          "properties": {
+            "type": "object",
+            "properties": {}
+          },
+          "stac_extensions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "stac_version": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        }
+      },
+      "STACItems": {
+        "title": "STACItems",
+        "type": "object",
+        "properties": {
+          "features": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Feature"
+            }
+          },
+          "links": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Link"
+            }
+          },
+          "numberMatched": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "numberReturned": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "timeStamp": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        }
+      },
+      "Schema": {
+        "title": "Schema",
+        "type": "object",
+        "properties": {
+          "$ref": {
+            "type": "string"
+          },
+          "allOf": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Schema"
+            }
+          },
+          "contentEncoding": {
+            "type": "string"
+          },
+          "contentMediaType": {
+            "type": "string"
+          },
+          "enumList": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "format": {
+            "type": "string"
+          },
+          "items": {
+            "$ref": "#/components/schemas/Schema"
+          },
+          "maxItems": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "maximum": {
+            "type": "number",
+            "format": "double"
+          },
+          "minItems": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "minimum": {
+            "type": "number",
+            "format": "double"
+          },
+          "oneOf": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Schema"
+            }
+          },
+          "properties": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "required": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "type": {
+            "type": "string"
+          }
+        }
+      },
+      "SpatialExtent": {
+        "title": "SpatialExtent",
+        "type": "object",
+        "properties": {
+          "bbox": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "number",
+                "format": "double"
+              }
+            }
+          },
+          "crs": {
+            "type": "string"
+          }
+        }
+      },
+      "TemporalExtent": {
+        "title": "TemporalExtent",
+        "type": "object",
+        "properties": {
+          "interval": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "Uom": {
+        "title": "Uom",
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

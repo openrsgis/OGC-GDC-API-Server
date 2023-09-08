@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="whu.edu.cn.mapper.GcCubeMapper">
+
+    <select id="getCubesByParams" resultType="whu.edu.cn.entity.Ingest.GcCube">
+        select * from "gc_cube" where 1=1
+        <if test="startTime!=null ">
+            AND start_time > #{startTime}
+        </if>
+        <if test="endTime!=null">
+            AND  #{endTime}>end_time
+        </if>
+        <if test="WKT!=null and WKT!=''">
+            AND ST_Intersects(geom,'SRID=4326;${WKT}')
+        </if>
+        ORDER BY id DESC
+        <if test="limit!=null">
+            limit #{limit}
+        </if>
+    </select>
+
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

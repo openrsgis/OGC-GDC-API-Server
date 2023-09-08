@@ -1,0 +1,68 @@
+{
+  "inputs": [
+    {
+      "id": "cubeId",
+      "input": {
+        "dataType": {
+          "name": "string"
+        },
+        "value": "?"
+      }
+    },
+    {
+      "id": "rasterProductName",
+      "input": {
+        "dataType": {
+          "name": "string"
+        },
+        "value": "LC08_L1TP_ARD_EO"
+      }
+    },
+    {
+      "id": "cityName",
+      "input": {
+        "dataType": {
+          "name": "string"
+        },
+        "value": "Wuhan"
+      }
+    },
+    {
+      "id": "provinceName",
+      "input": {
+        "dataType": {
+          "name": "string"
+        },
+        "value": "null"
+      }
+    },
+    {
+      "id": "month",
+      "input": {
+        "dataType": {
+          "name": "string"
+        },
+        "value": "null"
+      }
+    },
+    {
+      "id": "year",
+      "input": {
+        "dataType": {
+          "name": "string"
+        },
+        "value": "2017"
+      }
+    }
+  ],
+  "outputs": [
+    {
+      "id": "complexOutput",
+      "format": {
+        "mimeType": "application/json"
+      },
+      "transmissionMode": "value"
+    }],
+  "response": "document",
+  "mode": "async"
+}

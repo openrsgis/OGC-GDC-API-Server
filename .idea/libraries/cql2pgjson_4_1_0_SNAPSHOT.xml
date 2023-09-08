@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="cql2pgjson-4.1.0-SNAPSHOT">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/cql2pgjson-4.1.0-SNAPSHOT.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/cql2pgjson-fat.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/lib/cql2pgjson-fat.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/cql2pgjson-fat.jar!/1.0" />
+    </SOURCES>
+  </library>
+</component>

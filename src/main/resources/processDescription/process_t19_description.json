@@ -1,0 +1,611 @@
+{
+    "loadCube": {
+        "id": "loadCube",
+        "title": "loadCube",
+        "description": "Loads a data cube and supports spatial and temporal filtering",
+        "version": "1.0.0",
+        "jobControlOptions": [
+            "async-execute"
+        ],
+        "outputTransmission": [
+            "value",
+            "reference"
+        ],
+        "inputs": {
+            "cubeName": {
+                "title": "cubeName",
+                "description": "The name of the input data cube",
+                "schema": {
+                    "type": "string"
+                },
+                "minOccurs": 1,
+                "maxOccurs": 1
+            },
+            "extent": {
+                "title": "extent",
+                "description": "Bounding box of the extent to retrieve data",
+                "schema": {
+                    "type": "string"
+                },
+                "minOccurs": 0,
+                "maxOccurs": 1
+            },
+            "startTime": {
+                "title": "startTime",
+                "description": "The start time",
+                "schema": {
+                    "type": "string"
+                },
+                "minOccurs": 0,
+                "maxOccurs": 1
+            },
+            "endTime": {
+                "title": "endTime",
+                "description": "The end time",
+                "schema": {
+                    "type": "string"
+                },
+                "minOccurs": 0,
+                "maxOccurs": 1
+            }
+        },
+        "outputs": {
+            "cube": {
+                "title": "cube",
+                "description": "The selected data cube",
+                "schema": {
+                    "oneOf": [
+                        {
+                            "type": "string",
+                            "contentEncoding": "binary",
+                            "contentMediaType": "image/tiff; application=geotiff"
+                        },
+                        {
+                            "type": "string",
+                            "contentEncoding": "binary",
+                            "contentMediaType": "application/x-netcdf"
+                        }
+                    ]
+                }
+            }
+        },
+        "links": [
+            {
+                "type": "application/json",
+                "rel": "self",
+                "href": "http://http://oge.whu.edu.cn/geocube/gdc_api_t19/processes/loadCube",
+                "title": "The description of loadCube process"
+            },
+            {
+                "type": "application/json",
+                "rel": "http://www.opengis.net/def/rel/ogc/1.0/execute",
+                "href": "http://http://oge.whu.edu.cn/geocube/gdc_api_t19/processes/loadCube/execution",
+                "title": "Execution for loadCube process"
+            }
+        ]
+    },
+    "normalize": {
+        "id": "normalize",
+        "title": "Calculate the normalized index",
+        "description": "Calculate the normalized index along a dimension for the selected two dimension members as (B1-B2)/(B1+B2). The selected dimension will be reduced to the specified dimension name",
+        "version": "1.0.0",
+        "jobControlOptions": [
+            "async-execute"
+        ],
+        "outputTransmission": [
+            "value",
+            "reference"
+        ],
+        "inputs": {
+            "data": {
+                "title": "data",
+                "description": "The data cube as the input.",
+                "schema": {
+                    "oneOf": [
+                        {
+                            "type": "string",
+                            "contentEncoding": "binary",
+                            "contentMediaType": "image/tiff; application=geotiff"
+                        },
+                        {
+                            "type": "string",
+                            "contentEncoding": "binary",
+                            "contentMediaType": "application/x-netcdf"
+                        }
+                    ]
+                },
+                "minOccurs": 1,
+                "maxOccurs": 1
+            },
+            "dimensionName": {
+                "title": "dimensionName",
+                "description": "The name of the dimension used to be calculated normalized index",
+                "schema": {
+                    "type": "string",
+                    "default": "band"
+                },
+                "minOccurs": 1,
+                "maxOccurs": 1
+            },
+            "dimensionMembers": {
+                "title": "dimensionMembers",
+                "description": "The members of the dimension used to be calculated normalized index",
+                "schema": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "default": [
+                            "B4",
+                            "B3"
+                        ]
+                    }
+                },
+                "minOccurs": 1,
+                "maxOccurs": 1
+            },
+            "outputDimensionMember": {
+                "title": "outputDimensionMember",
+                "description": "The output dimension member name",
+                "schema": {
+                    "type": "string",
+                    "default": "normalized"
+                },
+                "minOccurs": 0,
+                "maxOccurs": 1
+            }
+        },
+        "outputs": {
+            "cube": {
+                "title": "cube",
+                "description": "The result data cube",
+                "schema": {
+                    "oneOf": [
+                        {
+                            "type": "string",
+                            "contentEncoding": "binary",
+                            "contentMediaType": "image/tiff; application=geotiff"
+                        },
+                        {
+                            "type": "string",
+                            "contentEncoding": "binary",
+                            "contentMediaType": "application/x-netcdf"
+                        }
+                    ]
+                }
+            }
+        },
+        "links": [
+            {
+                "type": "application/json",
+                "rel": "self",
+                "href": "http://oge.whu.edu.cn/geocube/gdc_api_t19/processes/add",
+                "title": "The description of add process"
+            },
+            {
+                "type": "application/json",
+                "rel": "http://www.opengis.net/def/rel/ogc/1.0/execute",
+                "href": "http://oge.whu.edu.cn/geocube/gdc_api_t19/processes/add/execution",
+                "title": "Execution for add process"
+            }
+        ]
+    },
+    "add": {
+        "id": "add",
+        "title": "add",
+        "description": "An addition operation along a dimension for the selected two dimension members. The selected dimension will be reduced to the specified dimension name",
+        "version": "1.0.0",
+        "jobControlOptions": [
+            "async-execute"
+        ],
+        "outputTransmission": [
+            "value",
+            "reference"
+        ],
+        "inputs": {
+            "data": {
+                "title": "data",
+                "description": "The data cube as the input.",
+                "schema": {
+                    "oneOf": [
+                        {
+                            "type": "string",
+                            "contentEncoding": "binary",
+                            "contentMediaType": "image/tiff; application=geotiff"
+                        },
+                        {
+                            "type": "string",
+                            "contentEncoding": "binary",
+                            "contentMediaType": "application/x-netcdf"
+                        }
+                    ]
+                },
+                "minOccurs": 1,
+                "maxOccurs": 1
+            },
+            "dimensionName": {
+                "title": "dimensionName",
+                "description": "The name of the dimension for which the addition operation is performed.",
+                "schema": {
+                    "type": "string",
+                    "default": "band"
+                },
+                "minOccurs": 1,
+                "maxOccurs": 1
+            },
+            "dimensionMembers": {
+                "title": "dimensionMembers",
+                "description": "The members of the dimension for which the addition operation is performed.",
+                "schema": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "default": [
+                            "B4",
+                            "B3"
+                        ]
+                    }
+                },
+                "minOccurs": 1,
+                "maxOccurs": 1
+            },
+            "outputDimensionMember": {
+                "title": "outputDimensionMember",
+                "description": "The output dimension member name",
+                "schema": {
+                    "type": "string",
+                    "default": "added"
+                },
+                "minOccurs": 0,
+                "maxOccurs": 1
+            }
+        },
+        "outputs": {
+            "cube": {
+                "title": "cube",
+                "description": "The result data cube.",
+                "schema": {
+                    "oneOf": [
+                        {
+                            "type": "string",
+                            "contentEncoding": "binary",
+                            "contentMediaType": "image/tiff; application=geotiff"
+                        },
+                        {
+                            "type": "string",
+                            "contentEncoding": "binary",
+                            "contentMediaType": "application/x-netcdf"
+                        }
+                    ]
+                }
+            }
+        },
+        "links": [
+            {
+                "type": "application/json",
+                "rel": "self",
+                "href": "http://oge.whu.edu.cn/geocube/gdc_api_t19/processes/add",
+                "title": "The description of add process"
+            },
+            {
+                "type": "application/json",
+                "rel": "http://www.opengis.net/def/rel/ogc/1.0/execute",
+                "href": "http://oge.whu.edu.cn/geocube/gdc_api_t19/processes/add/execution",
+                "title": "Execution for add process"
+            }
+        ]
+    },
+    "subtract": {
+        "id": "subtract",
+        "title": "subtract",
+        "description": "",
+        "version": "1.0.0",
+        "jobControlOptions": [
+            "async-execute"
+        ],
+        "outputTransmission": [
+            "value",
+            "reference"
+        ],
+        "inputs": {
+            "data": {
+                "title": "data",
+                "description": "An subtraction operation along a dimension for the selected two dimension members. The selected dimension will be reduced to the specified dimension name.",
+                "schema": {
+                    "oneOf": [
+                        {
+                            "type": "string",
+                            "contentEncoding": "binary",
+                            "contentMediaType": "image/tiff; application=geotiff"
+                        },
+                        {
+                            "type": "string",
+                            "contentEncoding": "binary",
+                            "contentMediaType": "application/x-netcdf"
+                        }
+                    ]
+                },
+                "minOccurs": 1,
+                "maxOccurs": 1
+            },
+            "dimensionName": {
+                "title": "dimensionName",
+                "description": "The name of the dimension for which the subtraction operation is performed.",
+                "schema": {
+                    "type": "string",
+                    "default": "band"
+                },
+                "minOccurs": 1,
+                "maxOccurs": 1
+            },
+            "dimensionMembers": {
+                "title": "dimensionMembers",
+                "description": "The members of the dimension for which the subtraction operation is performed.",
+                "schema": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "default": [
+                            "B4",
+                            "B3"
+                        ]
+                    }
+                },
+                "minOccurs": 1,
+                "maxOccurs": 1
+            },
+            "outputDimensionMember": {
+                "title": "outputDimensionMember",
+                "description": "The output dimension member name",
+                "schema": {
+                    "type": "string",
+                    "default": "subtract"
+                },
+                "minOccurs": 0,
+                "maxOccurs": 1
+            }
+        },
+        "outputs": {
+            "cube": {
+                "title": "cube",
+                "description": "The result data cube.",
+                "schema": {
+                    "oneOf": [
+                        {
+                            "type": "string",
+                            "contentEncoding": "binary",
+                            "contentMediaType": "image/tiff; application=geotiff"
+                        },
+                        {
+                            "type": "string",
+                            "contentEncoding": "binary",
+                            "contentMediaType": "application/x-netcdf"
+                        }
+                    ]
+                }
+            }
+        },
+        "links": [
+            {
+                "type": "application/json",
+                "rel": "self",
+                "href": "http://oge.whu.edu.cn/geocube/gdc_api_t19/processes/subtract",
+                "title": "The description of subtract process"
+            },
+            {
+                "type": "application/json",
+                "rel": "http://www.opengis.net/def/rel/ogc/1.0/execute",
+                "href": "http://oge.whu.edu.cn/geocube/gdc_api_t19/processes/subtract/execution",
+                "title": "Execution for subtract process"
+            }
+        ]
+    },
+    "divide": {
+        "id": "divide",
+        "title": "divide",
+        "description": "An division operation along a dimension for the selected two dimension members. The selected dimension will be reduced to the specified dimension name.",
+        "version": "1.0.0",
+        "jobControlOptions": [
+            "async-execute"
+        ],
+        "outputTransmission": [
+            "value",
+            "reference"
+        ],
+        "inputs": {
+            "data": {
+                "title": "data",
+                "description": "The data cube as the input.",
+                "schema": {
+                    "oneOf": [
+                        {
+                            "type": "string",
+                            "contentEncoding": "binary",
+                            "contentMediaType": "image/tiff; application=geotiff"
+                        },
+                        {
+                            "type": "string",
+                            "contentEncoding": "binary",
+                            "contentMediaType": "application/x-netcdf"
+                        }
+                    ]
+                },
+                "minOccurs": 1,
+                "maxOccurs": 1
+            },
+            "dimensionName": {
+                "title": "dimensionName",
+                "description": "The name of the dimension for which the division operation is performed.",
+                "schema": {
+                    "type": "string",
+                    "default": "band"
+                },
+                "minOccurs": 1,
+                "maxOccurs": 1
+            },
+            "dimensionMembers": {
+                "title": "dimensionMembers",
+                "description": "The members of the dimension for which the division operation is performed.",
+                "schema": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "default": [
+                            "B4",
+                            "B3"
+                        ]
+                    }
+                },
+                "minOccurs": 1,
+                "maxOccurs": 1
+            },
+            "outputDimensionMember": {
+                "title": "outputDimensionMember",
+                "description": "The output dimension member name",
+                "schema": {
+                    "type": "string",
+                    "default": "divide"
+                },
+                "minOccurs": 0,
+                "maxOccurs": 1
+            }
+        },
+        "outputs": {
+            "cube": {
+                "title": "cube",
+                "description": "The result data cube.",
+                "schema": {
+                    "oneOf": [
+                        {
+                            "type": "string",
+                            "contentEncoding": "binary",
+                            "contentMediaType": "image/tiff; application=geotiff"
+                        },
+                        {
+                            "type": "string",
+                            "contentEncoding": "binary",
+                            "contentMediaType": "application/x-netcdf"
+                        }
+                    ]
+                }
+            }
+        },
+        "links": [
+            {
+                "type": "application/json",
+                "rel": "self",
+                "href": "http://oge.whu.edu.cn/geocube/gdc_api_t19/processes/divide",
+                "title": "The description of divide process"
+            },
+            {
+                "type": "application/json",
+                "rel": "http://www.opengis.net/def/rel/ogc/1.0/execute",
+                "href": "http://oge.whu.edu.cn/geocube/gdc_api_t19/processes/divide/execution",
+                "title": "Execution for divide process"
+            }
+        ]
+    },
+    "aggregate": {
+        "id": "aggregate",
+        "title": "aggregate",
+        "description": "Aggregate along a certain dimension, reducing the dimension members to the specified dimension member name",
+        "version": "1.0.0",
+        "jobControlOptions": [
+            "async-execute"
+        ],
+        "outputTransmission": [
+            "value",
+            "reference"
+        ],
+        "inputs": {
+            "data": {
+                "title": "data",
+                "description": "The data cube as the input.",
+                "schema": {
+                    "oneOf": [
+                        {
+                            "type": "string",
+                            "contentEncoding": "binary",
+                            "contentMediaType": "image/tiff; application=geotiff"
+                        },
+                        {
+                            "type": "string",
+                            "contentEncoding": "binary",
+                            "contentMediaType": "application/x-netcdf"
+                        }
+                    ]
+                },
+                "minOccurs": 1,
+                "maxOccurs": 1
+            },
+            "dimensionName": {
+                "title": "dimensionName",
+                "description": "The dimension name for which the aggregate operation is performed",
+                "schema": {
+                    "type": "string",
+                    "default": "band"
+                },
+                "minOccurs": 1,
+                "maxOccurs": 1
+            },
+            "method": {
+                "title": "method",
+                "description": "The aggregate method, default is mean",
+                "schema": {
+                    "type": "string",
+                    "enum": [
+                        "max",
+                        "min",
+                        "mean",
+                        "sum"
+                    ]
+                },
+                "minOccurs": 1,
+                "maxOccurs": 1
+            }
+        },
+        "outputs": {
+            "cube": {
+                "title": "cube",
+                "description": "The result data cube",
+                "schema": {
+                    "oneOf": [
+                        {
+                            "type": "string",
+                            "contentEncoding": "binary",
+                            "contentMediaType": "image/tiff; application=geotiff"
+                        },
+                        {
+                            "type": "string",
+                            "contentEncoding": "binary",
+                            "contentMediaType": "application/x-netcdf"
+                        }
+                    ]
+                }
+            },
+            "outputDimensionMember": {
+                "title": "outputDimensionMember",
+                "description": "The output dimension member name",
+                "schema": {
+                    "type": "string",
+                    "default": "aggregate"
+                },
+                "minOccurs": 0,
+                "maxOccurs": 1
+            }
+        },
+        "links": [
+            {
+                "type": "application/json",
+                "rel": "self",
+                "href": "http://oge.whu.edu.cn/geocube/gdc_api_t19/processes/aggregate",
+                "title": "The description of aggregate process"
+            },
+            {
+                "type": "application/json",
+                "rel": "http://www.opengis.net/def/rel/ogc/1.0/execute",
+                "href": "http://oge.whu.edu.cn/geocube/gdc_api_t19/processes/aggregate/execution",
+                "title": "Execution for aggregate process"
+            }
+        ]
+    }
+}
