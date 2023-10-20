@@ -99,11 +99,12 @@ public class GDCDataAccessController {
         endpoints.add(new Endpoint("/collections/{collectionId}/items", java.util.Collections.singletonList("GET")));
         endpoints.add(new Endpoint("/collections/{collectionId}/items/{featureId}", java.util.Collections.singletonList("GET")));
         endpoints.add(new Endpoint("/collections/{collectionId}/coverage", java.util.Collections.singletonList("GET")));
-        endpoints.add(new Endpoint("/collections/processes", java.util.Collections.singletonList("GET")));
-        endpoints.add(new Endpoint("/collections/processes/{processId}", java.util.Collections.singletonList("GET")));
-        endpoints.add(new Endpoint("/collections/processes/{processId}/execution", java.util.Collections.singletonList("POST")));
-        endpoints.add(new Endpoint("/collections/processes/{processId}/jobs/{jobId}", java.util.Collections.singletonList("GET")));
-        endpoints.add(new Endpoint("/collections/processes/{processId}/jobs/{jobId}/results", java.util.Collections.singletonList("GET")));
+        endpoints.add(new Endpoint("/processes", java.util.Collections.singletonList("GET")));
+        endpoints.add(new Endpoint("/processes/{processId}", java.util.Collections.singletonList("GET")));
+        endpoints.add(new Endpoint("/processes/{processId}/execution", java.util.Collections.singletonList("POST")));
+        endpoints.add(new Endpoint("/jobs", java.util.Collections.singletonList("GET")));
+        endpoints.add(new Endpoint("/jobs/{jobId}", java.util.Collections.singletonList("GET")));
+        endpoints.add(new Endpoint("/jobs/{jobId}/results", java.util.Collections.singletonList("GET")));
         backendInfo.setEndpoints(endpoints);
         List<Link> linkList = new ArrayList<>();
         linkList.add(new Link(address.getGdcApiUrl() + "/",
@@ -254,9 +255,9 @@ public class GDCDataAccessController {
                     org.springframework.core.io.Resource resource = new InputStreamResource(fileSystem.open(filePath));
                     String filename = featureId + ".tif";
                     HttpHeaders headers = new HttpHeaders();
-                    headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+//                    headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+                    headers.setContentType(MediaType.valueOf("image/tiff; application=geotiff"));
                     headers.setContentDispositionFormData("attachment", URLEncoder.encode(filename, "UTF-8"));
-
                     return ResponseEntity.ok()
                             .headers(headers)
                             .body(resource);
@@ -324,7 +325,8 @@ public class GDCDataAccessController {
                         org.springframework.core.io.Resource resource = new InputStreamResource(fileSystem.open(filePath));
                         String filename = filePath.getName();
                         HttpHeaders headers = new HttpHeaders();
-                        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+//                        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+                        headers.setContentType(MediaType.valueOf("image/tiff; application=geotiff"));
                         headers.setContentDispositionFormData("attachment", URLEncoder.encode(filename, "UTF-8"));
 
                         return ResponseEntity.ok()
@@ -345,6 +347,8 @@ public class GDCDataAccessController {
             coverageSubset.setScaleAxes(scaleAxes);
             Boolean isSuccess;
             if (collectionId.contains("temp")) {
+                // hard code
+                coverageSubset.setProperties(null);
                 String workflowJson = redisUtil.getValueByKey(collectionId);
                 String secondLevelDir = UUID.randomUUID().toString();
                 Random random = new Random();
@@ -443,6 +447,7 @@ public class GDCDataAccessController {
      * @param f            the format of coverage
      * @return ResponseEntity<org.springframework.core.io.Resource>
      */
+    @ApiIgnore
     @ApiOperation(value = "Return the coverage", notes = "Return the coverage. It is highly recommended to include relevant selection parameters such as bbox, datetime, properties, or subset when retrieving data using the this endpoint to reduce unnecessary data retrieval. When no selection parameters are provided, a predefined preview image will be returned." +
             " When specifying the file type to be `tif`, if the filtered results yield time-series data or have multiple dimension members in other dimensions(except the band dimension), only the first matching data will be returned." +
             " Files downloaded through Swagger may sometimes be unable to open. This is due to a bug in Swagger itself. To overcome this issue, you can test this endpoint using a browser or tools like Postman to view the data.")

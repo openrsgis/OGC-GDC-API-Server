@@ -1,8 +1,11 @@
 package whu.edu.cn.util;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
@@ -11,8 +14,10 @@ import java.io.FilenameFilter;
 import java.net.MalformedURLException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Objects;
 
 @Component
+@Slf4j
 public class FileUtil {
 
     /**
@@ -44,6 +49,20 @@ public class FileUtil {
         }
     }
 
+    public HttpHeaders matchContentType(String fileName){
+        HttpHeaders headers = new HttpHeaders();
+        log.info("fileName is :" + fileName);
+        if(fileName.endsWith(".tif")){
+            log.info("This is a tif");
+            headers.setContentType(MediaType.valueOf("image/tiff; application=geotiff"));
+        }else if(fileName.endsWith(".nc")){
+            headers.setContentType(MediaType.valueOf("application/x-netcdf"));
+        }else if(fileName.endsWith(".png")){
+            headers.setContentType(MediaType.IMAGE_PNG);
+        }
+        return headers;
+    }
+
     /**
      * Downloads a file from the specified file path and returns it as a ResponseEntity object.
      * The method creates a Path object from the file path and a UrlResource object from the Path object.
@@ -57,8 +76,10 @@ public class FileUtil {
         Path file = Paths.get(filePath);
         Resource resource = new UrlResource(file.toUri());
         if (resource.exists()) {
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
+            HttpHeaders headers = matchContentType(file.getFileName().toString());
+            headers.setContentDisposition(ContentDisposition.builder("attachment").filename(Objects.requireNonNull(resource.getFilename())).build());
+            return ResponseEntity.ok().headers(headers)
+//                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
                     .body(resource);
         } else {
             return ResponseEntity.notFound().build();

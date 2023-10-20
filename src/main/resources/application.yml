@@ -29,7 +29,7 @@ spring:
     connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=500
   redis:
     database: 0
-    host: 125.220.153.26
+    host: 125.220.153.22
     lettuce:
       pool:
         max-active: 8   #最大连接数据库连接数,设 0 为没有限制

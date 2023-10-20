@@ -1,13 +1,5 @@
 package whu.edu.cn.entity.modify;
 
-import whu.edu.cn.entity.coverage.CollectionInfo;
-import whu.edu.cn.entity.extent.Extent;
-import whu.edu.cn.entity.extent.SpatialExtent;
-import whu.edu.cn.entity.extent.TemporalExtent;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 public class ModifyParam {

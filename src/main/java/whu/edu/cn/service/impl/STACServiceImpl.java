@@ -29,6 +29,7 @@ import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class STACServiceImpl implements ISTACService {
@@ -166,7 +167,7 @@ public class STACServiceImpl implements ISTACService {
         List<List<String>> interval = new ArrayList<>();
         TemporalExtent temporalExtent = null;
         if(!(cube.getStartTime() == null || cube.getStartTime().contains("1978-01-01"))){
-            interval.add(Arrays.asList(cube.getStartTime(), cube.getEndTime()));
+            interval.add(Arrays.asList(timeUtil.convertTime2Standard(cube.getStartTime()), timeUtil.convertTime2Standard(cube.getEndTime())));
             temporalExtent = new TemporalExtent(interval);
         }
         Extent extent = new Extent(spatialExtent, temporalExtent);
@@ -181,6 +182,11 @@ public class STACServiceImpl implements ISTACService {
                 "http://www.opengis.net/def/rel/ogc/1.0/coverage", "image/tiff; application=geotiff", "Get coverage data in GeoTIFF"));
         links.add(new Link(stacApiUrl + "/collections/" + cube.getCubeName() + "/coverage?f=netcdf",
                 "http://www.opengis.net/def/rel/ogc/1.0/coverage", "application/x-netcdf", "Get coverage data in NetCDF"));
+
+        links.add(new Link(stacApiUrl + "/collections/" + cube.getCubeName() + "/coverage/domainset",
+                "http://www.opengis.net/def/rel/ogc/1.0/coverage-domainset", "application/json", "Get the domainset"));
+        links.add(new Link(stacApiUrl + "/collections/" + cube.getCubeName() + "/coverage/rangetype",
+                "http://www.opengis.net/def/rel/ogc/1.0/coverage-rangetype", "application/json", "Get the rangetype"));
         return new Collection(id, title, description, license, extent, null, null, links);
     }
 
@@ -238,8 +244,8 @@ public class STACServiceImpl implements ISTACService {
 
         if(!(cube.getStartTime() == null || cube.getStartTime().contains("1978-01-01"))){
             List<String> temporalExtent = new ArrayList<>();
-            temporalExtent.add(cube.getStartTime());
-            temporalExtent.add(cube.getEndTime());
+            temporalExtent.add(timeUtil.convertTime2Standard(cube.getStartTime()));
+            temporalExtent.add(timeUtil.convertTime2Standard(cube.getEndTime()));
             DimensionTemporal dimensionTemporal = new DimensionTemporal(null, temporalExtent, null);
             dimensionMap.put("t", dimensionTemporal);
         }
@@ -256,7 +262,9 @@ public class STACServiceImpl implements ISTACService {
         if (dimensionTableName != null) {
             dimensionList = gcDimensionMapper.selectAdditionalDimensions(dimensionTableName);
             for (GcDimension dimension : dimensionList) {
-                dimensionMap.put(dimension.getDimensionName(), cube2DimensionOther(cube, dimension));
+                if(!(dimension.getDimensionName().equals("date") && cube.getCubeName().contains("ECMWF"))){
+                    dimensionMap.put(dimension.getDimensionName(), cube2DimensionOther(cube, dimension));
+                }
             }
         }
         return dimensionMap;
@@ -372,6 +380,12 @@ public class STACServiceImpl implements ISTACService {
         Object upperBound;
         if (dimension.getStep() == null) {
             coordinates = gcProductMapper.getDimensionCoordinates(cube.getProductTableName(), dimensionName);
+            if(dimension.getDimensionName().equals("time") && dimension.getDimensionTableName().equals("gc_product_34")){
+                coordinates = coordinates.stream().map(s -> "2016-10-28T" + s + "Z").collect(Collectors.toList());
+            }
+            if(dimension.getDimensionName().equals("time") && dimension.getDimensionTableName().equals("gc_product_33")){
+                coordinates = coordinates.stream().map(s -> "2020-09-15T" + s + "Z").collect(Collectors.toList());
+            }
             dimensionOther.setValues(coordinates);
         } else {
             dimensionOther.setStep(dimension.getStep().toString());

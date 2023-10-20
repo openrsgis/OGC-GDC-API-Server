@@ -39,6 +39,7 @@ import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -205,7 +206,7 @@ public class GcCubeServiceImpl implements IGcCubeService {
         collectionInfo.setCrs(crs);
         SpatialExtent spatialExtent = new SpatialExtent(bbox, geoUtil.getCRSHref(crsCode));
         List<List<String>> interval = new ArrayList<>();
-        interval.add(Arrays.asList(cube.getStartTime(), cube.getEndTime()));
+        interval.add(Arrays.asList(timeUtil.convertTime2Standard(cube.getStartTime()), timeUtil.convertTime2Standard(cube.getEndTime())));
         TemporalExtent temporalExtent = new TemporalExtent(interval);
         Extent extent = new Extent(spatialExtent, temporalExtent);
         collectionInfo.setExtent(extent);
@@ -249,7 +250,7 @@ public class GcCubeServiceImpl implements IGcCubeService {
                 extent.setTemporal(null);
             } else {
                 List<List<String>> interval = new ArrayList<>();
-                interval.add(Arrays.asList(modifyParam.getStartTime(), modifyParam.getEndTime()));
+                interval.add(Arrays.asList(timeUtil.convertTime2Standard(modifyParam.getStartTime()), timeUtil.convertTime2Standard(modifyParam.getEndTime())));
                 TemporalExtent temporalExtent = new TemporalExtent(interval);
                 extent.setTemporal(temporalExtent);
             }
@@ -321,16 +322,22 @@ public class GcCubeServiceImpl implements IGcCubeService {
                 }
             }
         }
-        // hardcode,delete the cloud dimension
-        for (int j = 0; j < axisInfos.size(); j++) {
-            AxisInfo axisInfo = axisInfos.get(j);
-            if (axisInfo.getAxisLabel().equals("time")) {
-                generalGrid.getAxisLabels().remove(j);
-                axisInfos.remove(axisInfo);
-                gridLimits.getAxisLabels().remove(j);
-                gridLimits.getAxis().remove(j);
+        // hard code, delete the time dimension
+        if (!(modifyParam.getStartTime() == null && modifyParam.getEndTime() == null)) {
+            if (modifyParam.getStartTime().equals("None") || modifyParam.getEndTime().equals("None")){
+                for (int j = 0; j < axisInfos.size(); j++) {
+                    AxisInfo axisInfo = axisInfos.get(j);
+                    if (axisInfo.getAxisLabel().equals("time")) {
+                        generalGrid.getAxisLabels().remove(j);
+                        axisInfos.remove(axisInfo);
+                        gridLimits.getAxisLabels().remove(j);
+                        gridLimits.getAxis().remove(j);
+                    }
+                }
             }
         }
+
+        // hardcode,delete the cloud dimension
         for (int j = 0; j < axisInfos.size(); j++) {
             AxisInfo axisInfo = axisInfos.get(j);
             if (axisInfo.getAxisLabel().equals("cloud")) {
@@ -422,7 +429,7 @@ public class GcCubeServiceImpl implements IGcCubeService {
         }
         for (GcDimension dimension : dimensionList) {
             AxisInfo axisInfo = additionalDimension2Axis(dimension, cube.getProductTableName(), null);
-            if (axisInfo != null) {
+            if (axisInfo != null && !(cube.getCubeName().contains("ECMWF") && dimension.getDimensionName().equals("date"))) {
                 usedAxisLabels.add(dimension.getDimensionName());
                 generalGridAxis.add(axisInfo);
             }
@@ -451,7 +458,7 @@ public class GcCubeServiceImpl implements IGcCubeService {
         int labelIndex = 0;
         for (GcDimension dimension : dimensionList) {
             AxisInfo axisInfo = additionalDimension2Axis(dimension, cube.getProductTableName(), axisLabels[labelIndex]);
-            if (axisInfo != null) {
+            if (axisInfo != null && !(cube.getCubeName().contains("ECMWF") && dimension.getDimensionName().equals("date"))) {
                 labelIndex = labelIndex + 1;
                 gridLimitGridAxis.add(axisInfo);
                 usedAxisLabels.add(axisLabels[labelIndex]);
@@ -464,6 +471,14 @@ public class GcCubeServiceImpl implements IGcCubeService {
         return domainSet;
     }
 
+//    public List<GcDimension> specialHandingECMWF(DomainSet domainSet, String cubeName){
+//        if(cubeName.contains("ECMWF")){
+//            domainSet.getGeneralGrid().getAxisLabels().remove("date");
+//            domainSet.getGeneralGrid().getAxis().
+//        }else{
+//            return domainSet;
+//        }
+//    }
     /**
      * additional dimension will be transformed to the axis
      *
@@ -484,12 +499,26 @@ public class GcCubeServiceImpl implements IGcCubeService {
             if (dimension.getStep() == null) {
                 axisType = "IrregularAxis";
                 coordinates = gcProductMapper.getDimensionCoordinates(productTableName, dimensionName);
+                if(dimension.getDimensionName().equals("time") && dimension.getDimensionTableName().equals("gc_product_34")){
+                    coordinates = coordinates.stream().map(s -> "2016-10-28T" + s + "Z").collect(Collectors.toList());
+                }
+                if(dimension.getDimensionName().equals("time") && dimension.getDimensionTableName().equals("gc_product_33")){
+                    coordinates = coordinates.stream().map(s -> "2020-09-15T" + s + "Z").collect(Collectors.toList());
+                }
             } else {
                 resolution = dimension.getStep();
             }
             if (!dimension.getMemberType().equals("string")) {
                 lowerBound = gcProductMapper.getDimensionCoordinatesMin(productTableName, dimensionName);
                 upperBound = gcProductMapper.getDimensionCoordinatesMax(productTableName, dimensionName);
+                if(dimension.getDimensionName().equals("time") && dimension.getDimensionTableName().equals("gc_product_34")){
+                    lowerBound = "2016-10-28T" + lowerBound + "Z";
+                    upperBound = "2016-10-28T" + upperBound + "Z";
+                }
+                if(dimension.getDimensionName().equals("time") && dimension.getDimensionTableName().equals("gc_product_33")){
+                    lowerBound = "2020-09-15T" + lowerBound + "Z";
+                    upperBound = "2020-09-15T" + upperBound + "Z";
+                }
             }
             if (axisLabel == null) {
                 return new AxisInfo(axisType, dimension.getDimensionName(), lowerBound, upperBound, resolution, dimension.getUnit(), coordinates);

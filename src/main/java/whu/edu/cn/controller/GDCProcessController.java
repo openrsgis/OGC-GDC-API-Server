@@ -3,8 +3,6 @@ package whu.edu.cn.controller;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.parser.Feature;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 
@@ -142,9 +140,10 @@ public class GDCProcessController {
             LocalDateTime now = LocalDateTime.now();
             String formatted = now.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
             job.setCreated(formatted);
-            job.setLinks(Collections.singletonList(new Link(address.getGdcApiUrl() + "/processes/" + processName
-                    + "/jobs/" + jobId,
+            job.setLinks(Collections.singletonList(new Link(address.getGdcApiUrl() + "/jobs/" + jobId,
                     "self", "application/json", processName)));
+            redisUtil.saveKeyValue("currentJob", jobId, 60 * 60 * 24);
+            redisUtil.saveKeyValue(jobId, processName, 60 * 60 * 24);
             redisUtil.saveKeyValue(processName + "_" + jobId + "_state", "STARTED,0%", 60 * 60 * 24);
             redisUtil.saveKeyValue(processName + "_" + jobId, JSON.toJSONString(job), 60 * 60 * 24);
             String processRequestStr = JSON.toJSONString(processRequestBody);
@@ -164,19 +163,60 @@ public class GDCProcessController {
     /**
      * Retrieve the status of a job.
      *
-     * @param processName the name of the process
-     * @param jobId       the job id
      * @return Job job
      */
     @ApiOperation(value = "Get the status of a job", notes = "Return the job status")
-    @GetMapping("/processes/{processId}/jobs/{jobId}")
-    public ResponseEntity<?> getStatus(@PathVariable("processId") String processName,
-                                       @PathVariable("jobId") String jobId) {
+    @GetMapping("/jobs")
+    public ResponseEntity<?> getJobList() {
+        List<Job> jobs = new ArrayList<>();
+        String currentJobId = redisUtil.getValueByKey("currentJob");
+        if(currentJobId != null){
+            Job job = getJobStatus(currentJobId);
+            if(job != null){
+                jobs.add(job);
+            }
+        }
+        JobList jobList = new JobList();
+        jobList.setJobs(jobs);
+        List<Link> links = new ArrayList<>();
+        links.add(new Link(address.getProcessApiUrl() + "/jobs", "self", "application/json", "the list of the job status"));
+        jobList.setLinks(links);
+        return ResponseEntity.ok(jobList);
+    }
+
+    /**
+     * Retrieve the status of a job.
+     *
+     * @param jobId the job id
+     * @return Job job
+     */
+    @ApiOperation(value = "Get the status of a job", notes = "Return the job status")
+    @GetMapping("/jobs/{jobId}")
+    public ResponseEntity<?> getStatus(@PathVariable("jobId") String jobId) {
+        Job job = getJobStatus(jobId);
+        if (job != null) {
+            return ResponseEntity.ok(job);
+        } else {
+            return ResponseEntity.status(500).body(jobId + "has been timeout");
+        }
+    }
+
+    /**
+     * Get the status of the job
+     *
+     * @param jobId the id of the job
+     * @return Job instance
+     */
+    public Job getJobStatus(String jobId) {
+        String processName = redisUtil.getValueByKey(jobId);
+        if (processName == null) {
+            return null;
+        }
         String jobStatus = redisUtil.getValueByKey(processName + "_" + jobId + "_state");
         String jobStr = redisUtil.getValueByKey(processName + "_" + jobId);
         if (jobStr == null || jobStatus == null) {
             log.error(jobId + "has been timeout");
-            return ResponseEntity.status(500).body(jobId + "has been timeout");
+            return null;
         } else {
             String status;
             String message;
@@ -209,25 +249,24 @@ public class GDCProcessController {
             job.setStatus(status);
             job.setMessage(message);
             job.setProgress(Integer.valueOf(jobStatus.split(",")[1].replace("%", "")));
-            return ResponseEntity.ok(job);
+            return job;
         }
     }
 
     /**
      * Retrieve the result(s) of a job/
      *
-     * @param processName the process name
-     * @param jobId       the job id
+     * @param jobId the job id
      * @return Map<String, Object> here only the output "cube"
      * @throws IOException
      */
     @ApiOperation(value = "Get the result of a job", notes = "Return the job result")
-    @GetMapping("/processes/{processId}/jobs/{jobId}/results")
-    public ResponseEntity<?> getResults(@PathVariable("processId") String processName,
-                                        @PathVariable("jobId") String jobId) throws IOException {
+    @GetMapping("/jobs/{jobId}/results")
+    public ResponseEntity<?> getResults(@PathVariable("jobId") String jobId) throws IOException {
         Map<String, Object> resultMap = new HashMap<>();
+        String processName = redisUtil.getValueByKey(jobId);
         String status = redisUtil.getValueByKey(processName + "_" + jobId + "_state");
-        if(status == null){
+        if (status == null) {
             return ResponseEntity.status(500).body("The maximum retention period has been exceeded.");
         }
         String statusRet = status.split(",")[0];
@@ -236,12 +275,13 @@ public class GDCProcessController {
         } else if (statusRet.equals("FINISHED")) {
             String resultPath = fileUtil.matchResultFile(address.getLocalDataRoot() + "/" + jobId);
             if (resultPath != null) {
-                String fileName = new File(resultPath).getName();
-                JSONObject imageObj = new JSONObject();
-                imageObj.put("href", "http://oge.whu.edu.cn/api/oge-data/data/gdc_api/" + jobId + "/" + fileName);
-                imageObj.put("type", "application/tiff; application=geotiff");
-                resultMap.put("cube", imageObj);
-                return ResponseEntity.ok(resultMap);
+//                String fileName = new File(resultPath).getName();
+//                JSONObject imageObj = new JSONObject();
+//                imageObj.put("href", "http://oge.whu.edu.cn/api/oge-data/data/gdc_api/" + jobId + "/" + fileName);
+//                imageObj.put("type", "application/tiff; application=geotiff");
+//                resultMap.put("cube", imageObj);
+//                return ResponseEntity.ok(resultMap);
+                return fileUtil.downloadFile(resultPath);
             } else {
                 return ResponseEntity.status(500).body("An error occurred  retrieving data");
             }
