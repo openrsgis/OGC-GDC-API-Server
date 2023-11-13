@@ -133,6 +133,7 @@ public class GDCProcessController {
             File jobIdFile = new File(address.getLocalDataRoot() + jobId);
             if (!jobIdFile.exists()) jobIdFile.mkdir();
             Job job = new Job();
+            job.setProcessID(processName);
             job.setJobID(jobId);
             job.setStatus("accepted");
             job.setMessage("Process started");
@@ -141,7 +142,7 @@ public class GDCProcessController {
             String formatted = now.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
             job.setCreated(formatted);
             job.setLinks(Collections.singletonList(new Link(address.getGdcApiUrl() + "/jobs/" + jobId,
-                    "self", "application/json", processName)));
+                    "status", "application/json", "Job status")));
             redisUtil.saveKeyValue("currentJob", jobId, 60 * 60 * 24);
             redisUtil.saveKeyValue(jobId, processName, 60 * 60 * 24);
             redisUtil.saveKeyValue(processName + "_" + jobId + "_state", "STARTED,0%", 60 * 60 * 24);
@@ -149,11 +150,11 @@ public class GDCProcessController {
             String processRequestStr = JSON.toJSONString(processRequestBody);
 //            sparkApplicationService.submitGDCWorkflow(sparkAppParas, processName, processRequestStr, jobId, localOutputDir, "false", "");
             sparkApplicationService.submitGDCWorkflowByLivy(jobId, processName, processRequestStr, localOutputDir, "false", "");
-            return ResponseEntity.ok(job);
+            return ResponseEntity.status(201).body(job);
         } else if (response.equals("collection")) {
             String tempCollection = "temp_" + jobId;
             redisUtil.saveKeyValue(tempCollection, JSON.toJSONString(processRequestBody), 60 * 60 * 24);
-            return ResponseEntity.status(302).header("Location", address.getGdcApiUrl() + "/collections/" + tempCollection).build();
+            return ResponseEntity.status(303).header("Location", address.getGdcApiUrl() + "/collections/" + tempCollection).build();
 //            return ResponseEntity.status(302).header("Location", "http://125.220.153.26:8386/geocube/gdc_api_t19" + "/collections/" + tempCollection).build();
         } else {
             return ResponseEntity.status(500).body("Illegal parameter 'response'!");
@@ -170,9 +171,9 @@ public class GDCProcessController {
     public ResponseEntity<?> getJobList() {
         List<Job> jobs = new ArrayList<>();
         String currentJobId = redisUtil.getValueByKey("currentJob");
-        if(currentJobId != null){
+        if (currentJobId != null) {
             Job job = getJobStatus(currentJobId);
-            if(job != null){
+            if (job != null) {
                 jobs.add(job);
             }
         }
@@ -246,9 +247,18 @@ public class GDCProcessController {
                     message = "Process dismissed";
                     break;
             }
+            job.setProcessID(processName);
             job.setStatus(status);
             job.setMessage(message);
             job.setProgress(Integer.valueOf(jobStatus.split(",")[1].replace("%", "")));
+            List<Link> links = new ArrayList<>();
+            links.add(new Link(address.getGdcApiUrl() + "/jobs/" + jobId,
+                    "status", "application/json", "Job status"));
+            if (statusRet.equals("FINISHED")) {
+                links.add(new Link(address.getGdcApiUrl() + "/jobs/" + jobId + "/results",
+                        "http://www.opengis.net/def/rel/ogc/1.0/results", "application/json", "Job result"));
+            }
+            job.setLinks(links);
             return job;
         }
     }

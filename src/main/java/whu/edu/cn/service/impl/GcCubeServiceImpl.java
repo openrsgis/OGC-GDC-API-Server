@@ -618,6 +618,7 @@ public class GcCubeServiceImpl implements IGcCubeService {
     public QueryParams setSpatialExtent(QueryParams queryParams, String bbox, CoverageSubset coverageSubset,
                                         CollectionInfo collectionInfo) {
         Double[] coordinates = new Double[4];
+        Double[] cubeExtent = collectionInfo.getExtent().getSpatial().getBbox().get(0).toArray(new Double[0]);
         if (bbox != null) {
             String[] coordinateList = bbox.split(",");
             for (int i = 0; i < coordinateList.length; i++) {
@@ -626,9 +627,12 @@ public class GcCubeServiceImpl implements IGcCubeService {
         } else if (coverageSubset != null && coverageSubset.getSpatialSubset() != null) {
             coordinates = coverageSubset.getSpatialSubset();
         } else {
-            coordinates = collectionInfo.getExtent().getSpatial().getBbox().get(0).toArray(new Double[0]);
+            coordinates = cubeExtent;
         }
-        queryParams.setExtent(coordinates[0], coordinates[1], coordinates[2], coordinates[3]);
+        Double[] insertBbox = GeoUtil.intersectAndCoverBbox(coordinates, cubeExtent);
+        if(insertBbox != null){
+            queryParams.setExtent(insertBbox[0], insertBbox[1], insertBbox[2], insertBbox[3]);
+        }
         return queryParams;
     }
 
@@ -644,8 +648,10 @@ public class GcCubeServiceImpl implements IGcCubeService {
      */
     public QueryParams setTemporalExtent(QueryParams queryParams, String datetime, CoverageSubset coverageSubset,
                                          CollectionInfo collectionInfo) throws ParseException {
-        String startTime = "";
-        String endTime = "";
+        String startTime = null;
+        String endTime = null;
+        String cubeStartTime = timeUtil.convertTime(collectionInfo.getExtent().getTemporal().getInterval().get(0).get(0));
+        String cubeEndTime = timeUtil.convertTime(collectionInfo.getExtent().getTemporal().getInterval().get(0).get(1));
         if (datetime != null) {
             TimeUtil.DateTimeResult dateTimeResult = timeUtil.parseDateTime(datetime);
             if (dateTimeResult.type.equals(TimeUtil.DateTimeType.DATE_TIME)) {
@@ -660,8 +666,8 @@ public class GcCubeServiceImpl implements IGcCubeService {
             endTime = coverageSubset.getTemporalSubsetDouble().get(1);
         } else {
             // 获取整个Cube的时间
-            startTime = collectionInfo.getExtent().getTemporal().getInterval().get(0).get(0);
-            endTime = collectionInfo.getExtent().getTemporal().getInterval().get(0).get(1);
+            startTime = cubeStartTime;
+            endTime = cubeEndTime;
         }
         if (startTime == null) {
             startTime = "1978-01-01 07:00:00";
@@ -669,18 +675,23 @@ public class GcCubeServiceImpl implements IGcCubeService {
         if (endTime == null) {
             endTime = "2200-01-01 07:00:00";
         }
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        Date startDate = sdf.parse(startTime);
-        Date endDate = sdf.parse(endTime);
-        Calendar startCalendar = Calendar.getInstance();
-        startCalendar.setTime(startDate);
-        startCalendar.add(Calendar.SECOND, -1);
-        startTime = sdf.format(startCalendar.getTime());
-        Calendar endCalendar = Calendar.getInstance();
-        endCalendar.setTime(endDate);
-        endCalendar.add(Calendar.SECOND, 1);
-        endTime = sdf.format(endCalendar.getTime());
-        queryParams.setTime(startTime, endTime);
+        String[] intersectTime = TimeUtil.intersectTimeRanges(new String[]{startTime, endTime}, new String[]{cubeStartTime, cubeEndTime});
+        if (intersectTime != null) {
+            startTime = intersectTime[0];
+            endTime = intersectTime[1];
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            Date startDate = sdf.parse(startTime);
+            Date endDate = sdf.parse(endTime);
+            Calendar startCalendar = Calendar.getInstance();
+            startCalendar.setTime(startDate);
+            startCalendar.add(Calendar.SECOND, -1);
+            startTime = sdf.format(startCalendar.getTime());
+            Calendar endCalendar = Calendar.getInstance();
+            endCalendar.setTime(endDate);
+            endCalendar.add(Calendar.SECOND, 1);
+            endTime = sdf.format(endCalendar.getTime());
+            queryParams.setTime(startTime, endTime);
+        }
         return queryParams;
     }
 
@@ -726,6 +737,10 @@ public class GcCubeServiceImpl implements IGcCubeService {
     public Boolean getCoverageBySubmitSpark(String cubeName, String jobId, String bbox, String datetime, CoverageSubset coverageSubset, String outputDir, String f) throws ParseException {
         try {
             QueryParams queryParams = getQueryParams(cubeName, bbox, datetime, coverageSubset, f);
+            String processName = "Coverage";
+            if(checkQueryParams(queryParams, jobId, processName)){
+                return true;
+            }
             queryParams.setPolygon(null);
             WorkflowCollectionParam workflowCollectionParam = new WorkflowCollectionParam();
             workflowCollectionParam.setQueryParams(queryParams);
@@ -754,7 +769,7 @@ public class GcCubeServiceImpl implements IGcCubeService {
                 workflowCollectionParam.setScaleFactor(Option.empty());
             }
             workflowCollectionParam.setImageFormat(f);
-            String processName = "Coverage";
+
             redisUtil.saveKeyValue(processName + "_" + jobId + "_state", "STARTED,0%", 60 * 10);
 //            sparkApplicationService.submitGetCoverage(sparkAppParas, jobId, outputDir, workflowCollectionParam.toJSONString());
             sparkApplicationService.submitGetCoverageByLivy(jobId, processName, outputDir, workflowCollectionParam.toJSONString());
@@ -863,13 +878,14 @@ public class GcCubeServiceImpl implements IGcCubeService {
                         timer.cancel();
                         break;
                     case "FAILED":
+                    case "TIME_CANCEL":
                         timer.cancel();
                         condition[1] = true;
                         break;
                     default:
                         break;
                 }
-                if (secondsPassed >= 120) { // 如果满足条件或超过2分钟，退出
+                if (secondsPassed >= 60) { // 如果满足条件或超过1分钟，退出
                     log.info("Time out");
                     condition[1] = true;
                     timer.cancel();
@@ -882,6 +898,20 @@ public class GcCubeServiceImpl implements IGcCubeService {
         Thread.sleep(1000);
         return condition[0];
     }
+
+
+    public Boolean checkQueryParams(QueryParams queryParams, String jobId, String processName){
+        if(queryParams.getStartTime().equals("") || queryParams.getEndTime().equals("")){
+            redisUtil.saveKeyValue(processName + "_" + jobId + "_state", "SpatialOut,0%", 60 * 10);
+            return true;
+        }else if(queryParams.getExtentCoordinates().size() == 0){
+            redisUtil.saveKeyValue(processName + "_" + jobId + "_state", "TimeOut,0%", 60 * 10);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
 
 
 }

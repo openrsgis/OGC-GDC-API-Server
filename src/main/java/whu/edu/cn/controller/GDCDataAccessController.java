@@ -22,6 +22,8 @@ import whu.edu.cn.entity.modify.ModifyParam;
 import whu.edu.cn.entity.process.Link;
 import whu.edu.cn.entity.coverage.CoverageSubset;
 import whu.edu.cn.entity.stac.*;
+import whu.edu.cn.exception.GDCException;
+import whu.edu.cn.service.IExceptionService;
 import whu.edu.cn.service.IGcCubeService;
 import whu.edu.cn.service.ISTACService;
 import whu.edu.cn.util.FileUtil;
@@ -61,8 +63,11 @@ public class GDCDataAccessController {
     @Resource
     private Address address;
 
+    @Resource
+    private IExceptionService exceptionService;
+
     @ApiOperation(value = "Backend information", notes = "Backend information", position = 1)
-    @GetMapping(value = "/")
+    @GetMapping(value = {"/", ""})
     public ResponseEntity<BackendInfo> getBackendInfo() {
         BackendInfo backendInfo = new BackendInfo();
         List<String> comformList = new ArrayList<>();
@@ -70,27 +75,37 @@ public class GDCDataAccessController {
         comformList.add("https://api.stacspec.org/v1.0.0/core");
         comformList.add("https://api.stacspec.org/v1.0.0/collections");
         comformList.add("https://api.stacspec.org/v1.0.0/ogcapi-features");
+        comformList.add("http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/core");
+        comformList.add("http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/oas30");
+        comformList.add("http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/json");
+        comformList.add("http://www.opengis.net/spec/ogcapi-common-2/0.0/conf/collections");
         comformList.add("http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core");
         comformList.add("http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/oas30");
         comformList.add("http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/geojson");
         comformList.add("http://www.opengis.net/spec/ogcapi-features-3/0.0/conf/features-filter");
         comformList.add("http://www.opengis.net/spec/ogcapi-features-3/0.0/conf/filter");
         comformList.add("http://www.opengis.net/spec/cql2/0.0/conf/cql2-text");
-        comformList.add("http://www.opengis.net/spec/ogcapi-coverages-1/1.0/conf/geodata-coverage");
-        comformList.add("http://www.opengis.net/spec/ogcapi-coverages-1/0.0/conf/geotiff");
-        comformList.add("http://www.opengis.net/spec/ogcapi-coverages-1/1.0/conf/coverage-subset");
-        comformList.add("http://www.opengis.net/spec/ogcapi-coverages-1/0.0/conf/coverage-scaling");
-        comformList.add("http://www.opengis.net/spec/ogcapi-coverages-1/0.0/conf/coverage-rangesubset");
-        comformList.add("http://www.opengis.net/spec/ogcapi-coverages-1/0.0/conf/coverage-bbox");
-        comformList.add("http://www.opengis.net/spec/ogcapi-coverages-1/0.0/conf/coverage-datetime");
+//        comformList.add("http://www.opengis.net/spec/ogcapi-coverages-1/0.0/conf/geodata-coverage");
+//        comformList.add("http://www.opengis.net/spec/ogcapi-coverages-1/0.0/conf/geotiff");
+//        comformList.add("http://www.opengis.net/spec/ogcapi-coverages-1/0.0/conf/coverage-subset");
+//        comformList.add("http://www.opengis.net/spec/ogcapi-coverages-1/0.0/conf/coverage-scaling");
+//        comformList.add("http://www.opengis.net/spec/ogcapi-coverages-1/0.0/conf/coverage-bbox");
+//        comformList.add("http://www.opengis.net/spec/ogcapi-coverages-1/0.0/conf/coverage-datetime");
+        comformList.add("http://www.opengis.net/spec/ogcapi-coverages-1/1.0/conf/core");
+//        comformList.add("http://www.opengis.net/spec/ogcapi-coverages-1/1.0/conf/scaling");
+        comformList.add("http://www.opengis.net/spec/ogcapi-coverages-1/1.0/conf/subsetting");
+        comformList.add("http://www.opengis.net/spec/ogcapi-coverages-1/1.0/conf/fieldselection");
+        comformList.add("http://www.opengis.net/spec/ogcapi-coverages-1/1.0/conf/geotiff");
+        comformList.add("http://www.opengis.net/spec/ogcapi-coverages-1/1.0/conf/netcdf");
+
         comformList.add("http://www.opengis.net/spec/ogcapi-coverages-1/1.0/conf/oas30");
         comformList.add("http://www.opengis.net/spec/ogcapi-processes-1/1.0/conf/core");
         comformList.add("http://www.opengis.net/spec/ogcapi-processes-1/1.0/conf/ogc-process-description");
         comformList.add("http://www.opengis.net/spec/ogcapi-processes-1/1.0/conf/json");
         comformList.add("http://www.opengis.net/spec/ogcapi-processes-1/1.0/conf/oas30");
-        comformList.add("http://www.opengis.net/spec/ogcapi-processes-3/0.0/conf/moaw-definition");
+        comformList.add("http://www.opengis.net/spec/ogcapi-processes-1/1.0/conf/job-list");
         comformList.add("http://www.opengis.net/spec/ogcapi-processes-3/0.0/conf/collection-output");
-        comformList.add("http://www.opengis.net/spec/ogcapi-processes-3/0.0/conf/nested-process");
+        comformList.add("http://www.opengis.net/spec/ogcapi-processes-3/0.0/conf/nested-processes");
         backendInfo.setConformsTo(comformList);
         List<Endpoint> endpoints = new ArrayList<>();
         endpoints.add(new Endpoint("/collections", java.util.Collections.singletonList("GET")));
@@ -119,6 +134,8 @@ public class GDCDataAccessController {
                 "data", "application/json", "The JSON representation of the list of all data collections served from this endpoint"));
         linkList.add(new Link(address.getGdcApiUrl() + "/processes",
                 "http://www.opengis.net/def/rel/ogc/1.0/processes", "application/json", "The JSON representation of the list of all processes available from this endpoint"));
+        linkList.add(new Link(address.getGdcApiUrl() + "/jobs",
+                "http://www.opengis.net/def/rel/ogc/1.0/job-list", "application/json", "The JSON representation of the list of all jobs available from this endpoint"));
         backendInfo.setLinks(linkList);
         return new ResponseEntity<>(backendInfo, HttpStatus.OK);
     }
@@ -153,27 +170,37 @@ public class GDCDataAccessController {
         comformList.add("https://api.stacspec.org/v1.0.0/core");
         comformList.add("https://api.stacspec.org/v1.0.0/collections");
         comformList.add("https://api.stacspec.org/v1.0.0/ogcapi-features");
+        comformList.add("http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/core");
+        comformList.add("http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/oas30");
+        comformList.add("http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/json");
+        comformList.add("http://www.opengis.net/spec/ogcapi-common-2/0.0/conf/collections");
         comformList.add("http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core");
         comformList.add("http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/oas30");
         comformList.add("http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/geojson");
         comformList.add("http://www.opengis.net/spec/ogcapi-features-3/0.0/conf/features-filter");
         comformList.add("http://www.opengis.net/spec/ogcapi-features-3/0.0/conf/filter");
         comformList.add("http://www.opengis.net/spec/cql2/0.0/conf/cql2-text");
-        comformList.add("http://www.opengis.net/spec/ogcapi-coverages-1/1.0/conf/geodata-coverage");
-        comformList.add("http://www.opengis.net/spec/ogcapi-coverages-1/0.0/conf/geotiff");
-        comformList.add("http://www.opengis.net/spec/ogcapi-coverages-1/1.0/conf/coverage-subset");
-        comformList.add("http://www.opengis.net/spec/ogcapi-coverages-1/0.0/conf/coverage-scaling");
-        comformList.add("http://www.opengis.net/spec/ogcapi-coverages-1/0.0/conf/coverage-rangesubset");
-        comformList.add("http://www.opengis.net/spec/ogcapi-coverages-1/0.0/conf/coverage-bbox");
-        comformList.add("http://www.opengis.net/spec/ogcapi-coverages-1/0.0/conf/coverage-datetime");
+//        comformList.add("http://www.opengis.net/spec/ogcapi-coverages-1/0.0/conf/geodata-coverage");
+//        comformList.add("http://www.opengis.net/spec/ogcapi-coverages-1/0.0/conf/geotiff");
+//        comformList.add("http://www.opengis.net/spec/ogcapi-coverages-1/0.0/conf/coverage-subset");
+//        comformList.add("http://www.opengis.net/spec/ogcapi-coverages-1/0.0/conf/coverage-scaling");
+//        comformList.add("http://www.opengis.net/spec/ogcapi-coverages-1/0.0/conf/coverage-bbox");
+//        comformList.add("http://www.opengis.net/spec/ogcapi-coverages-1/0.0/conf/coverage-datetime");
+        comformList.add("http://www.opengis.net/spec/ogcapi-coverages-1/1.0/conf/core");
+//        comformList.add("http://www.opengis.net/spec/ogcapi-coverages-1/1.0/conf/scaling");
+        comformList.add("http://www.opengis.net/spec/ogcapi-coverages-1/1.0/conf/subsetting");
+        comformList.add("http://www.opengis.net/spec/ogcapi-coverages-1/1.0/conf/fieldselection");
+        comformList.add("http://www.opengis.net/spec/ogcapi-coverages-1/1.0/conf/geotiff");
+        comformList.add("http://www.opengis.net/spec/ogcapi-coverages-1/1.0/conf/netcdf");
+
         comformList.add("http://www.opengis.net/spec/ogcapi-coverages-1/1.0/conf/oas30");
         comformList.add("http://www.opengis.net/spec/ogcapi-processes-1/1.0/conf/core");
         comformList.add("http://www.opengis.net/spec/ogcapi-processes-1/1.0/conf/ogc-process-description");
         comformList.add("http://www.opengis.net/spec/ogcapi-processes-1/1.0/conf/json");
         comformList.add("http://www.opengis.net/spec/ogcapi-processes-1/1.0/conf/oas30");
-        comformList.add("http://www.opengis.net/spec/ogcapi-processes-3/0.0/conf/moaw-definition");
+        comformList.add("http://www.opengis.net/spec/ogcapi-processes-1/1.0/conf/job-list");
         comformList.add("http://www.opengis.net/spec/ogcapi-processes-3/0.0/conf/collection-output");
-        comformList.add("http://www.opengis.net/spec/ogcapi-processes-3/0.0/conf/nested-process");
+        comformList.add("http://www.opengis.net/spec/ogcapi-processes-3/0.0/conf/nested-processes");
         conformance.setConformsTo(comformList);
         return new ResponseEntity<>(conformance, HttpStatus.OK);
     }
@@ -297,9 +324,9 @@ public class GDCDataAccessController {
             @ApiParam(value = "Temporal extent is specified by RFC 3339, eg. 2016-10-28T00:01:00Z/2016-10-28T01:01:00Z", example = "2016-10-28T01:01:00Z/2016-10-28T02:01:00Z") @RequestParam(value = "datetime", required = false) String datetime,
             @ApiParam(value = "Supports cube cutting or slicing through dimensional filtering", example = "pressure(1000)") @RequestParam(value = "subset", required = false) String subset,
             @ApiParam(value = "Supports cube cutting or slicing through band filtering", example = "Divergence") @RequestParam(value = "properties", required = false) String properties,
-            @ApiParam(value = "Scale-factor, number") @RequestParam(value = "scale-factor", required = false) Double scaleFactor,
-            @ApiParam(value = "Scale-size") @RequestParam(value = "scale-size", required = false) String scaleSize,
-            @ApiParam(value = "Scale-axes") @RequestParam(value = "scale-axes", required = false) String scaleAxes,
+            @ApiParam(value = "Scale-factor, number", hidden = true) @RequestParam(value = "scale-factor", required = false) Double scaleFactor,
+            @ApiParam(value = "Scale-size", hidden = true) @RequestParam(value = "scale-size", required = false) String scaleSize,
+            @ApiParam(value = "Scale-axes", hidden = true) @RequestParam(value = "scale-axes", required = false) String scaleAxes,
             @ApiParam(value = "The format of the output, only support tif and netcdf", example = "tif") @RequestParam(value = "f", required = false, defaultValue = "tif") String f) {
         try {
             if ((!collectionId.contains("temp")) && (bbox == null && datetime == null && subset == null && properties == null && scaleFactor == null && scaleSize == null && scaleAxes == null)) {
@@ -378,14 +405,19 @@ public class GDCDataAccessController {
                 if (!jobIdFile.exists()) jobIdFile.mkdir();
                 isSuccess = cubeService.getCoverageBySubmitSpark(collectionId, jobId, bbox, datetime, coverageSubset, outputDir, f);
                 if (isSuccess) {
+                    GDCException coverageException = exceptionService.checkQueryParams("Coverage_" + jobId+ "_state");
+                    if(coverageException.getFlag()){
+                        return ResponseEntity.status(coverageException.getCode()).body(coverageException.getMessage());
+                    }
                     String resultPath = fileUtil.matchResultFile(outputDir);
                     if (resultPath != null) {
                         return fileUtil.downloadFile(resultPath);
                     } else {
-                        return ResponseEntity.status(500).body("An error occurred  retrieving data");
+                        return ResponseEntity.status(500).body("An error occurred retrieving data");
                     }
                 } else {
-                    return ResponseEntity.status(500).body("An error occurred  retrieving data");
+                    GDCException coverageException = exceptionService.submitCoverageTask("Coverage_" + jobId+ "_state");
+                    return ResponseEntity.status(coverageException.getCode()).body(coverageException.getMessage());
                 }
             }
         } catch (Exception e) {

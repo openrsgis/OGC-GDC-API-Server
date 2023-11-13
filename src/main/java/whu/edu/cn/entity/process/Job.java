@@ -26,6 +26,8 @@ public class Job implements Serializable {
      */
     private List<Link> links;
 
+    private String processID;
+
     public String getJobID() {
         return jobID;
     }
@@ -72,5 +74,13 @@ public class Job implements Serializable {
 
     public void setLinks(List<Link> links) {
         this.links = links;
+    }
+
+    public String getProcessID() {
+        return processID;
+    }
+
+    public void setProcessID(String processID) {
+        this.processID = processID;
     }
 }

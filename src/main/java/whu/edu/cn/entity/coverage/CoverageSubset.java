@@ -88,7 +88,22 @@ public class CoverageSubset {
             coordinates[1] = Double.parseDouble(latMatcher.group(1));
             coordinates[3] = Double.parseDouble(latMatcher.group(2));
         }
-        return coordinates;
+        if (checkNullInArray(coordinates)) {
+            return null;
+        } else {
+            return coordinates;
+        }
+    }
+
+    public Boolean checkNullInArray(Double[] coordinates) {
+        Boolean containsNull = false;
+        for (Double coordinate : coordinates) {
+            if (coordinate == null) {
+                containsNull = true;
+                break;
+            }
+        }
+        return containsNull;
     }
 
     /**
@@ -115,6 +130,7 @@ public class CoverageSubset {
      * time("2012-01-10 00:00:00") -> ["2012-01-10 00:00:00", "2012-01-10 00:00:00"]
      * time("2012-01-10 00:00:00":"2012-01-11 00:00:00") -> ["2012-01-10 00:00:00", "2012-01-11 00:00:00"]
      * time("2012-01-10T00:00:00Z":"2012-01-11T00:00:00Z") -> ["2012-01-10 00:00:00", "2012-01-11 00:00:00"]
+     *
      * @return
      */
     public List<String> getTemporalSubsetDouble() {
@@ -257,8 +273,10 @@ public class CoverageSubset {
 //        }
 //        Pattern lonPattern = Pattern.compile("Lon\\((\\d+)\\)");
 //        Pattern latPattern = Pattern.compile("Lat\\((\\d+)\\)");
-        Pattern lonPattern = Pattern.compile("Lon\\((.*?):(.*?)\\)");
-        Pattern latPattern = Pattern.compile("Lat\\((.*?):(.*?)\\)");
+//        Pattern lonPattern = Pattern.compile("Lon\\((.*?):(.*?)\\)");
+//        Pattern latPattern = Pattern.compile("Lat\\((.*?):(.*?)\\)");
+        Pattern lonPattern = Pattern.compile("Lon\\((.*?)\\)");
+        Pattern latPattern = Pattern.compile("Lat\\((.*?)\\)");
         Matcher lonMatcher = lonPattern.matcher(this.scaleSize);
         Matcher latMatcher = latPattern.matcher(this.scaleSize);
         if (lonMatcher.find()) {
@@ -280,8 +298,10 @@ public class CoverageSubset {
         Double[] lonLat = new Double[2];
 //        Pattern lonPattern = Pattern.compile("Lon\\((\\d+)\\)");
 //        Pattern latPattern = Pattern.compile("Lat\\((\\d+)\\)");
-        Pattern lonPattern = Pattern.compile("Lon\\((.*?):(.*?)\\)");
-        Pattern latPattern = Pattern.compile("Lat\\((.*?):(.*?)\\)");
+//        Pattern lonPattern = Pattern.compile("Lon\\((.*?):(.*?)\\)");
+//        Pattern latPattern = Pattern.compile("Lat\\((.*?):(.*?)\\)");
+        Pattern lonPattern = Pattern.compile("Lon\\((.*?)\\)");
+        Pattern latPattern = Pattern.compile("Lat\\((.*?)\\)");
         Matcher lonMatcher = lonPattern.matcher(this.scaleAxes);
         Matcher latMatcher = latPattern.matcher(this.scaleAxes);
         if (lonMatcher.find()) {

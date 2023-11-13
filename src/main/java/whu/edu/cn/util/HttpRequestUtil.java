@@ -80,7 +80,9 @@ public class HttpRequestUtil {
             //获取URLConnection对象对应的输出流
             PrintWriter out = new PrintWriter(conn.getOutputStream());
             //发送请求参数
-            out.print(param);
+            if(param!=null){
+                out.print(param);
+            }
             //flush输出流的缓冲
             out.flush();
             // 定义 BufferedReader输入流来读取URL的响应

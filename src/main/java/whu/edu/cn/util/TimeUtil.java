@@ -193,4 +193,50 @@ public class TimeUtil {
         }
     }
 
+    public static String[] intersectTimeRanges(String[] timeRange1, String[] timeRange2) {
+        LocalDateTime startTime1 = parseDateTimeStr(timeRange1[0]);
+        LocalDateTime endTime1 = parseDateTimeStr(timeRange1[1]);
+
+        LocalDateTime startTime2 = parseDateTimeStr(timeRange2[0]);
+        LocalDateTime endTime2 = parseDateTimeStr(timeRange2[1]);
+
+        LocalDateTime intersectionStart = startTime1.isAfter(startTime2) ? startTime1 : startTime2;
+        LocalDateTime intersectionEnd = endTime1.isBefore(endTime2) ? endTime1 : endTime2;
+
+        if (intersectionStart.isBefore(intersectionEnd) || intersectionStart.isEqual(intersectionEnd)) {
+            // 有相交部分或者一个时间范围被完全包含在另一个范围中
+            return new String[]{formatDateTimeStr(intersectionStart), formatDateTimeStr(intersectionEnd)};
+        } else {
+            // 没有相交部分
+            return null;
+        }
+    }
+    private static LocalDateTime parseDateTimeStr(String dateTimeString) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        return LocalDateTime.parse(dateTimeString, formatter);
+    }
+
+    private static String formatDateTimeStr(LocalDateTime dateTime) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        return dateTime.format(formatter);
+    }
+
+    public static void main(String[] args) {
+        // 示例时间范围数组
+        String[] timeRange1 = {"1978-01-01 07:00:00", "1980-01-01 07:00:00"};
+        String[] timeRange2 = {"1978-01-02 07:00:00", "1978-01-03 07:00:00"};
+
+        // 调用函数获取相交部分的时间范围
+        String[] intersection = intersectTimeRanges(timeRange1, timeRange2);
+
+        // 打印结果
+        if (intersection != null) {
+            System.out.println("Time ranges intersect or one is completely contained within the other:");
+            System.out.println("Intersection Start: " + intersection[0]);
+            System.out.println("Intersection End: " + intersection[1]);
+        } else {
+            System.out.println("Time ranges do not intersect or one is not completely contained within the other.");
+        }
+    }
+
 }

@@ -48,8 +48,8 @@ public class LivyUtil {
             bodyChildren.put("spark.driver.extraClassPath", "local:/home/geocube/spark/jars/*");
             bodyChildren.put("spark.executor.extraClassPath", "local:/home/geocube/spark/jars/*");
             bodyChildren.put("spark.driver.memory", "2G");
-            bodyChildren.put("spark.executor.cores", 8);
-            bodyChildren.put("spark.cores.max", 32);
+            bodyChildren.put("spark.executor.cores", 4);
+            bodyChildren.put("spark.cores.max", 16);
             bodyChildren.put("spark.executor.memory", "8G");
             livyConf.put("conf", bodyChildren);
             String param = livyConf.toJSONString();
@@ -92,8 +92,8 @@ public class LivyUtil {
                 bodyChildren.put("spark.driver.extraClassPath", "local:/home/geocube/spark/jars/*");
                 bodyChildren.put("spark.executor.extraClassPath", "local:/home/geocube/spark/jars/*");
                 bodyChildren.put("spark.driver.memory", "2G");
-                bodyChildren.put("spark.executor.cores", 8);
-                bodyChildren.put("spark.cores.max", 32);
+                bodyChildren.put("spark.executor.cores", 4);
+                bodyChildren.put("spark.cores.max", 12);
                 bodyChildren.put("spark.executor.memory", "8G");
                 body.put("conf", bodyChildren);
                 String param = body.toJSONString();
@@ -130,7 +130,14 @@ public class LivyUtil {
             JSONObject jsonObject = JSON.parseObject(outputString);
             int statementId = jsonObject.getInteger("id");
             int progressbarPercent = 0;
+            int secondsPassed = 0;
             while (true) {
+                secondsPassed++;
+                if (secondsPassed >= 60) {
+                    // 大于1分钟视为超时
+                    String canceledMsg = HttpRequestUtil.sendPost(baseUrl + "/sessions/" + sessionIdAvailable + "/statements/" + statementId + "/cancel", null);
+                    redisUtil.saveKeyValue(functionName + "_" + jobID + "_state", "TIME_CANCEL" + "," + progressbarPercent + "%");
+                }
                 if (progressbarPercent < 100) {
                     progressbarPercent = progressbarPercent + 10;
                 }

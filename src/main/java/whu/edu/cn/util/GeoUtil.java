@@ -3,6 +3,7 @@ package whu.edu.cn.util;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.locationtech.jts.geom.Envelope;
 import org.springframework.stereotype.Component;
 
 /**
@@ -107,5 +108,54 @@ public class GeoUtil {
         return extent1.get(0).equals(extent2.get(0)) && extent1.get(1).equals(extent2.get(1)) &&
                 extent1.get(2).equals(extent2.get(2)) && extent1.get(3).equals(extent2.get(3));
     }
+
+    public static Double[] intersectAndCoverBbox(Double[] bboxDouble1, Double[] bboxDouble2) {
+        // 将 Double 数组转换为 Envelope 对象
+        Envelope bbox1 = toEnvelope(bboxDouble1);
+        Envelope bbox2 = toEnvelope(bboxDouble2);
+        if (bbox1.covers(bbox2)) {
+            return toArray(bbox2); // bbox1 完全包含 bbox2
+        } else if (bbox2.covers(bbox1)) {
+            return toArray(bbox1); // bbox2 完全包含 bbox1
+        }else if (bbox1.intersects(bbox2)) {
+            // 计算相交 bbox
+            double xMin = Math.max(bbox1.getMinX(), bbox2.getMinX());
+            double yMin = Math.max(bbox1.getMinY(), bbox2.getMinY());
+            double xMax = Math.min(bbox1.getMaxX(), bbox2.getMaxX());
+            double yMax = Math.min(bbox1.getMaxY(), bbox2.getMaxY());
+            return toArray(new Envelope(xMin, xMax, yMin, yMax));
+        } else {
+            return null; // 不相交的情况
+        }
+    }
+
+    private static Envelope toEnvelope(Double[] bbox) {
+        return new Envelope(bbox[0], bbox[2], bbox[1], bbox[3]);
+    }
+
+    private static Double[] toArray(Envelope envelope) {
+        return new Double[]{envelope.getMinX(), envelope.getMinY(), envelope.getMaxX(), envelope.getMaxY()};
+    }
+
+    public static void main(String[] args) {
+        // 示例 bbox
+//        Envelope bbox1 = new Envelope(0.0, 5.0, 0.0, 5.0);
+//        Envelope bbox2 = new Envelope(-1, 6, -1, 6.0);
+        Double[] bbox1 = {-2.0, 0.0, 5.0, 5.0};
+        Double[] bbox2 = {-1.0, -1.0, 6.0, 6.0};
+
+        // 判断并获取相交的 bbox
+        Double[] intersection = intersectAndCoverBbox(bbox1, bbox2);
+
+        // 打印结果
+        if (intersection != null) {
+            System.out.println("Bboxes intersect. Intersection or covered bbox: [" +
+                    intersection[0] + ", " + intersection[1] + ", " +
+                    intersection[2] + ", " + intersection[3] + "]");
+        } else {
+            System.out.println("Bboxes do not intersect or cover each other.");
+        }
+    }
+
 
 }

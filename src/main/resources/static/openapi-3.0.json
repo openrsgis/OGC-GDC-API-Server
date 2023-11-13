@@ -11,22 +11,21 @@
   },
   "servers": [
     {
-      "description": "Open Geospatial Engine Server",
       "url": "http://oge.whu.edu.cn/"
     }
   ],
   "tags": [
     {
       "name": "GDC API - Data Access: STAC API/OGC API - Coverages",
-      "description": "GDC API for Data Access"
+      "description": "GDC Data Access Controller"
     },
     {
       "name": "GDC API - Data Process: OGC API - Processes - Part1/Part3",
-      "description": "GDC API for Process"
+      "description": "GDC Process Controller"
     }
   ],
   "paths": {
-    "/geocube/gdc_api_t19/": {
+    "/geocube/gdc_api_t19": {
       "get": {
         "tags": [
           "GDC API - Data Access: STAC API/OGC API - Coverages"
@@ -41,6 +40,74 @@
               "*/*": {
                 "schema": {
                   "$ref": "#/components/schemas/BackendInfo"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {}
+          }
+        }
+      }
+    },
+    "/geocube/gdc_api_t19/": {
+      "get": {
+        "tags": [
+          "GDC API - Data Access: STAC API/OGC API - Coverages"
+        ],
+        "summary": "Backend information",
+        "description": "Backend information",
+        "operationId": "getBackendInfoUsingGET_1",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/BackendInfo"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {}
+          }
+        }
+      }
+    },
+    "/geocube/gdc_api_t19/api": {
+      "get": {
+        "tags": [
+          "GDC API - Data Access: STAC API/OGC API - Coverages"
+        ],
+        "summary": "Open API 3.0",
+        "description": "Open API 3.0",
+        "operationId": "getOpenAPIUsingGET",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object"
                 }
               }
             }
@@ -287,123 +354,6 @@
               "*/*": {
                 "schema": {
                   "$ref": "#/components/schemas/DomainSet"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {}
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {}
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {}
-          }
-        }
-      }
-    },
-    "/geocube/gdc_api_t19/collections/{collectionId}/coverage/rangeset": {
-      "get": {
-        "tags": [
-          "GDC API - Data Access: STAC API/OGC API - Coverages"
-        ],
-        "summary": "Return the coverage",
-        "description": "Return the coverage. It is highly recommended to include relevant selection parameters such as bbox, datetime, properties, or subset when retrieving data using the this endpoint to reduce unnecessary data retrieval. When no selection parameters are provided, a predefined preview image will be returned. When specifying the file type to be `tif`, if the filtered results yield time-series data or have multiple dimension members in other dimensions(except the band dimension), only the first matching data will be returned. Files downloaded through Swagger may sometimes be unable to open. This is due to a bug in Swagger itself. To overcome this issue, you can test this endpoint using a browser or tools like Postman to view the data.",
-        "operationId": "getCoverageRangeSetUsingGET",
-        "parameters": [
-          {
-            "name": "bbox",
-            "in": "query",
-            "description": "Spatial bounding box in String format 'minx,miny,maxx,maxy', eg. 0,35,40,70",
-            "schema": {
-              "type": "string"
-            },
-            "example": "0,35,40,70"
-          },
-          {
-            "name": "collectionId",
-            "in": "path",
-            "description": "collectionId",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "example": "ECMWF_ht3e"
-          },
-          {
-            "name": "datetime",
-            "in": "query",
-            "description": "Temporal extent is specified by RFC 3339, eg. 2016-10-28T00:01:00Z/2016-10-28T01:01:00Z",
-            "schema": {
-              "type": "string"
-            },
-            "example": "2016-10-28T01:01:00Z/2016-10-28T02:01:00Z"
-          },
-          {
-            "name": "f",
-            "in": "query",
-            "description": "The format of the output, only support tif and netcdf",
-            "schema": {
-              "type": "string",
-              "default": "tif"
-            },
-            "example": "tif"
-          },
-          {
-            "name": "properties",
-            "in": "query",
-            "description": "Supports cube cutting or slicing through band filtering",
-            "schema": {
-              "type": "string"
-            },
-            "example": "Divergence"
-          },
-          {
-            "name": "scale-axes",
-            "in": "query",
-            "description": "Scale-axes",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "scale-factor",
-            "in": "query",
-            "description": "Scale-factor, number",
-            "schema": {
-              "type": "number",
-              "format": "double"
-            }
-          },
-          {
-            "name": "scale-size",
-            "in": "query",
-            "description": "Scale-size",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "subset",
-            "in": "query",
-            "description": "Supports cube cutting or slicing through dimensional filtering",
-            "schema": {
-              "type": "string"
-            },
-            "example": "pressure(1000)"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "object"
                 }
               }
             }
@@ -689,6 +639,130 @@
         }
       }
     },
+    "/geocube/gdc_api_t19/jobs": {
+      "get": {
+        "tags": [
+          "GDC API - Data Process: OGC API - Processes - Part1/Part3"
+        ],
+        "summary": "Get the status of a job",
+        "description": "Return the job status",
+        "operationId": "getJobListUsingGET",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {}
+          }
+        }
+      }
+    },
+    "/geocube/gdc_api_t19/jobs/{jobId}": {
+      "get": {
+        "tags": [
+          "GDC API - Data Process: OGC API - Processes - Part1/Part3"
+        ],
+        "summary": "Get the status of a job",
+        "description": "Return the job status",
+        "operationId": "getStatusUsingGET",
+        "parameters": [
+          {
+            "name": "jobId",
+            "in": "path",
+            "description": "jobId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {}
+          }
+        }
+      }
+    },
+    "/geocube/gdc_api_t19/jobs/{jobId}/results": {
+      "get": {
+        "tags": [
+          "GDC API - Data Process: OGC API - Processes - Part1/Part3"
+        ],
+        "summary": "Get the result of a job",
+        "description": "Return the job result",
+        "operationId": "getResultsUsingGET",
+        "parameters": [
+          {
+            "name": "jobId",
+            "in": "path",
+            "description": "jobId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {}
+          }
+        }
+      }
+    },
     "/geocube/gdc_api_t19/processes": {
       "get": {
         "tags": [
@@ -836,114 +910,6 @@
         },
         "x-codegen-request-body-name": "processRequestBody"
       }
-    },
-    "/geocube/gdc_api_t19/processes/{processId}/jobs/{jobId}": {
-      "get": {
-        "tags": [
-          "GDC API - Data Process: OGC API - Processes - Part1/Part3"
-        ],
-        "summary": "Get the status of a job",
-        "description": "Return the job status",
-        "operationId": "getStatusUsingGET",
-        "parameters": [
-          {
-            "name": "jobId",
-            "in": "path",
-            "description": "jobId",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "processId",
-            "in": "path",
-            "description": "processId",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {}
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {}
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {}
-          }
-        }
-      }
-    },
-    "/geocube/gdc_api_t19/processes/{processId}/jobs/{jobId}/results": {
-      "get": {
-        "tags": [
-          "GDC API - Data Process: OGC API - Processes - Part1/Part3"
-        ],
-        "summary": "Get the result of a job",
-        "description": "Return the job result",
-        "operationId": "getResultsUsingGET",
-        "parameters": [
-          {
-            "name": "jobId",
-            "in": "path",
-            "description": "jobId",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "processId",
-            "in": "path",
-            "description": "processId",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {}
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {}
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {}
-          }
-        }
-      }
     }
   },
   "components": {
@@ -991,8 +957,8 @@
             "properties": {}
           },
           "resolution": {
-            "type": "number",
-            "format": "double"
+            "type": "object",
+            "properties": {}
           },
           "type": {
             "type": "string"
@@ -1301,18 +1267,13 @@
       },
       "Dimension": {
         "title": "Dimension",
-        "required": [
-          "type"
-        ],
         "type": "object",
         "properties": {
           "description": {
-            "type": "string",
-            "description": "Detailed description to explain the entity.  [CommonMark 0.29](http://commonmark.org/) syntax MAY be used for rich text representation."
+            "type": "string"
           },
           "type": {
             "type": "string",
-            "description": "Type of the dimension.",
             "enum": [
               "bands",
               "other",
@@ -1330,19 +1291,13 @@
           },
           {
             "title": "DimensionBands",
-            "required": [
-              "type",
-              "values"
-            ],
             "type": "object",
             "properties": {
               "description": {
-                "type": "string",
-                "description": "Detailed description to explain the entity.  [CommonMark 0.29](http://commonmark.org/) syntax MAY be used for rich text representation."
+                "type": "string"
               },
               "type": {
                 "type": "string",
-                "description": "Type of the dimension.",
                 "enum": [
                   "bands",
                   "other",
@@ -1352,7 +1307,6 @@
               },
               "values": {
                 "type": "array",
-                "description": "A set of all potential values, especially useful for [nominal](https://en.wikipedia.org/wiki/Level_of_measurement#Nominal_level) values.  **Important:** The order of the values MUST be exactly how the dimension values are also ordered in the data (cube). If the values specify band names, the values MUST be in the same order as they are in the corresponding band fields (i.e. `eo:bands` or `sar:bands`).",
                 "items": {
                   "type": "string"
                 }
@@ -1369,14 +1323,10 @@
           },
           {
             "title": "DimensionOther",
-            "required": [
-              "type"
-            ],
             "type": "object",
             "properties": {
               "description": {
-                "type": "string",
-                "description": "Detailed description to explain the entity.  [CommonMark 0.29](http://commonmark.org/) syntax MAY be used for rich text representation."
+                "type": "string"
               },
               "extent": {
                 "type": "array",
@@ -1392,7 +1342,6 @@
               },
               "type": {
                 "type": "string",
-                "description": "Type of the dimension.",
                 "enum": [
                   "bands",
                   "other",
@@ -1422,8 +1371,7 @@
           {
             "title": "DimensionSpatial",
             "required": [
-              "axis",
-              "type"
+              "axis"
             ],
             "type": "object",
             "properties": {
@@ -1437,8 +1385,7 @@
                 ]
               },
               "description": {
-                "type": "string",
-                "description": "Detailed description to explain the entity.  [CommonMark 0.29](http://commonmark.org/) syntax MAY be used for rich text representation."
+                "type": "string"
               },
               "extent": {
                 "type": "array",
@@ -1458,7 +1405,6 @@
               },
               "type": {
                 "type": "string",
-                "description": "Type of the dimension.",
                 "enum": [
                   "bands",
                   "other",
@@ -1488,19 +1434,13 @@
           },
           {
             "title": "DimensionTemporal",
-            "required": [
-              "extent",
-              "type"
-            ],
             "type": "object",
             "properties": {
               "description": {
-                "type": "string",
-                "description": "Detailed description to explain the entity.  [CommonMark 0.29](http://commonmark.org/) syntax MAY be used for rich text representation."
+                "type": "string"
               },
               "extent": {
                 "type": "array",
-                "description": "Extent (lower and upper bounds) of the dimension as two-dimensional array. The dates and/or times must be strings compliant to [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601). `null` is allowed for open date ranges.",
                 "items": {
                   "type": "string"
                 }
@@ -1510,7 +1450,6 @@
               },
               "type": {
                 "type": "string",
-                "description": "Type of the dimension.",
                 "enum": [
                   "bands",
                   "other",
@@ -1520,7 +1459,6 @@
               },
               "values": {
                 "type": "array",
-                "description": "If the dimension consists of set of specific values they can be listed here. The dates and/or times must be strings compliant to [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601).",
                 "items": {
                   "type": "string"
                 }
@@ -1870,79 +1808,6 @@
           }
         ]
       },
-      "GeoJsonPoint": {
-        "title": "GeoJsonPoint",
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/GeoJsonGeometry"
-          },
-          {
-            "title": "GeoJsonPoint",
-            "required": [
-              "coordinates",
-              "type"
-            ],
-            "type": "object",
-            "properties": {
-              "coordinates": {
-                "type": "array",
-                "description": "Point in 3D space",
-                "items": {
-                  "type": "number"
-                }
-              },
-              "type": {
-                "type": "string",
-                "enum": [
-                  "Point"
-                ]
-              }
-            }
-          }
-        ]
-      },
-      "GeoJsonPolygon": {
-        "title": "GeoJsonPolygon",
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/GeoJsonGeometry"
-          },
-          {
-            "title": "GeoJsonPolygon",
-            "required": [
-              "coordinates",
-              "type"
-            ],
-            "type": "object",
-            "properties": {
-              "coordinates": {
-                "type": "array",
-                "items": {
-                  "type": "array",
-                  "items": {
-                    "type": "array",
-                    "items": {
-                      "type": "number"
-                    }
-                  }
-                }
-              },
-              "type": {
-                "type": "string",
-                "enum": [
-                  "GeometryCollection",
-                  "LineString",
-                  "MultiLineString",
-                  "MultiPoint",
-                  "MultiPolygon",
-                  "Point",
-                  "Polygon"
-                ]
-              }
-            }
-          }
-        ]
-      },
       "GridLimits": {
         "title": "GridLimits",
         "type": "object",
@@ -2250,7 +2115,7 @@
         "title": "RangeType",
         "type": "object",
         "properties": {
-          "fieldInfoList": {
+          "field": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/FieldInfo"
@@ -2358,7 +2223,7 @@
           "contentMediaType": {
             "type": "string"
           },
-          "enumList": {
+          "enum": {
             "type": "array",
             "items": {
               "type": "object",
