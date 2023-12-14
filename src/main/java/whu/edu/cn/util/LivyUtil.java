@@ -161,4 +161,29 @@ public class LivyUtil {
             }
         }
     }
+
+    public Boolean isAvailableSession(){
+        // 检查session能否使用
+        boolean sessionIdAvailable = false;
+        String baseUrl = livyUrl;
+//        String baseUrl = "http://125.220.153.26:19101";
+        // 获取所有的session
+        String allSessionInfoString = HttpRequestUtil.sendGet(baseUrl + "/sessions/");
+        JSONObject allSessionInfoObject = JSON.parseObject(allSessionInfoString);
+        JSONArray sessionArray = allSessionInfoObject.getJSONArray("sessions");
+        for (int i = 0; i < sessionArray.size(); i++) {
+            JSONObject sessionInfoObject = sessionArray.getJSONObject(i);
+            if (Objects.equals(sessionInfoObject.getString("state"), "idle")) {
+                sessionIdAvailable = true;
+                break;
+            }
+        }
+        return  sessionIdAvailable;
+    }
+
+    public static void main(String [] args){
+       LivyUtil livyUtil = new LivyUtil();
+       livyUtil.isAvailableSession();
+    }
+
 }

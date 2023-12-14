@@ -9,6 +9,7 @@ public class ModifyParam {
     private String endTime;
     private List<ModifyBands> bands;
     private List<ModifyDimension> dimensions;
+    private String usedBands;
 
     public String getCollection() {
         return collection;
@@ -56,5 +57,13 @@ public class ModifyParam {
 
     public void setDimensions(List<ModifyDimension> dimensions) {
         this.dimensions = dimensions;
+    }
+
+    public String getUsedBands() {
+        return usedBands;
+    }
+
+    public void setUsedBands(String usedBands) {
+        this.usedBands = usedBands;
     }
 }

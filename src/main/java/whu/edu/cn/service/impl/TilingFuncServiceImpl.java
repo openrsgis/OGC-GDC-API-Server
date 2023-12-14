@@ -29,9 +29,14 @@ public class TilingFuncServiceImpl implements ITilingFuncService {
     @Value("${hadoop.confDir}")
     private String hadoopConfDir;
 
+    @Value("${tile-log.path}")
+    private String logPath;
 
     @Value("${sparkappparas.jarPath.javaHome}")
     private String javaHome;
+
+    @Value("${sparkappparas.sparkHome}")
+    private String sparkHome;
 
     @Override
     @Async
@@ -43,11 +48,12 @@ public class TilingFuncServiceImpl implements ITilingFuncService {
         env.put("HADOOP_CONF_DIR", hadoopConfDir);
         env.put("JAVA_HOME", javaHome);
         CountDownLatch countDownLatch = new CountDownLatch(1);
-        String outputPath = "/home/geocube/tb19/server/status.txt";
+        String outputPath = logPath;
         System.out.println("fileName:" + fileName);
         writeToFile(outputPath, fileName);
         SparkAppHandle handle = new SparkLauncher(env)
-                .setSparkHome("/home/geocube/spark")
+//                .setSparkHome("/home/geocube/spark")
+                .setSparkHome(sparkHome)
                 .setAppResource(appResource)
                 .setMainClass("whu.edu.cn.core.raster.ingest.Ingestor")
                 .addAppArgs(paramPath, type, threadSize, hbaseTableName, gridDimX.toString(),

@@ -13,7 +13,7 @@ import java.util.List;
 /**
  * @Description: 产品表
  * @Author: jeecg-boot
- * @Date:   2020-08-29
+ * @Date: 2020-08-29
  * @Version: V1.0
  */
 @Mapper
@@ -45,8 +45,13 @@ public interface GcProductMapper extends BaseMapper<GcProduct> {
 
     Integer getProductsOfCubeCountWithCQL(@Param("cubeID") String cubeID, @Param("cql") String cql, @Param("startTime") Timestamp startTime,
                                           @Param("endTime") Timestamp endTime, @Param("WKT") String WKT);
+
     List<GcProduct> getProductsOfCubeWithCQL(@Param("cubeID") String cubeID, @Param("cql") String cql, @Param("startTime") Timestamp startTime,
                                              @Param("endTime") Timestamp endTime, @Param("WKT") String WKT, RowBounds rowBounds);
 
     GcProduct getProductByIdentification(String cubeID, String identification);
+
+    @Select("SELECT phenomenon_time FROM gc_product_${cubeId} ORDER BY ABS(EXTRACT(EPOCH FROM phenomenon_time - #{time}::timestamp)) LIMIT 1")
+    String getLatestTime(@Param("cubeId") String cubeId, @Param("time") String time);
+
 }

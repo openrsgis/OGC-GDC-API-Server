@@ -18,4 +18,5 @@ public interface IGcProductService extends IService<GcProduct> {
     Integer getMaxProductKey(String cubeId);
     Integer getMaxProductId(String cubeId);
     List<GcProduct> getProductFromCombinedParam(String combinedParam, String cubeId);
+    String getLatestTime(String cubeId, String  time);
 }

@@ -324,7 +324,7 @@ public class GcCubeServiceImpl implements IGcCubeService {
         }
         // hard code, delete the time dimension
         if (!(modifyParam.getStartTime() == null && modifyParam.getEndTime() == null)) {
-            if (modifyParam.getStartTime().equals("None") || modifyParam.getEndTime().equals("None")){
+            if (modifyParam.getStartTime().equals("None") || modifyParam.getEndTime().equals("None")) {
                 for (int j = 0; j < axisInfos.size(); j++) {
                     AxisInfo axisInfo = axisInfos.get(j);
                     if (axisInfo.getAxisLabel().equals("time")) {
@@ -479,6 +479,7 @@ public class GcCubeServiceImpl implements IGcCubeService {
 //            return domainSet;
 //        }
 //    }
+
     /**
      * additional dimension will be transformed to the axis
      *
@@ -499,10 +500,10 @@ public class GcCubeServiceImpl implements IGcCubeService {
             if (dimension.getStep() == null) {
                 axisType = "IrregularAxis";
                 coordinates = gcProductMapper.getDimensionCoordinates(productTableName, dimensionName);
-                if(dimension.getDimensionName().equals("time") && dimension.getDimensionTableName().equals("gc_product_34")){
+                if (dimension.getDimensionName().equals("time") && dimension.getDimensionTableName().equals("gc_product_34")) {
                     coordinates = coordinates.stream().map(s -> "2016-10-28T" + s + "Z").collect(Collectors.toList());
                 }
-                if(dimension.getDimensionName().equals("time") && dimension.getDimensionTableName().equals("gc_product_33")){
+                if (dimension.getDimensionName().equals("time") && dimension.getDimensionTableName().equals("gc_product_33")) {
                     coordinates = coordinates.stream().map(s -> "2020-09-15T" + s + "Z").collect(Collectors.toList());
                 }
             } else {
@@ -511,11 +512,11 @@ public class GcCubeServiceImpl implements IGcCubeService {
             if (!dimension.getMemberType().equals("string")) {
                 lowerBound = gcProductMapper.getDimensionCoordinatesMin(productTableName, dimensionName);
                 upperBound = gcProductMapper.getDimensionCoordinatesMax(productTableName, dimensionName);
-                if(dimension.getDimensionName().equals("time") && dimension.getDimensionTableName().equals("gc_product_34")){
+                if (dimension.getDimensionName().equals("time") && dimension.getDimensionTableName().equals("gc_product_34")) {
                     lowerBound = "2016-10-28T" + lowerBound + "Z";
                     upperBound = "2016-10-28T" + upperBound + "Z";
                 }
-                if(dimension.getDimensionName().equals("time") && dimension.getDimensionTableName().equals("gc_product_33")){
+                if (dimension.getDimensionName().equals("time") && dimension.getDimensionTableName().equals("gc_product_33")) {
                     lowerBound = "2020-09-15T" + lowerBound + "Z";
                     upperBound = "2020-09-15T" + upperBound + "Z";
                 }
@@ -565,6 +566,7 @@ public class GcCubeServiceImpl implements IGcCubeService {
      */
     public CollectionInfo getWorkflowCollectionInfo(String collectionId) {
         String dagStr = redisUtil.getValueByKey(collectionId);
+        if(dagStr == null) return null;
         Random random = new Random();
         JSONObject dagObj = GDCTrigger.runMetaAnalysis(dagStr, Integer.toString(random.nextInt()));
         System.out.println(dagObj.toJSONString());
@@ -630,7 +632,7 @@ public class GcCubeServiceImpl implements IGcCubeService {
             coordinates = cubeExtent;
         }
         Double[] insertBbox = GeoUtil.intersectAndCoverBbox(coordinates, cubeExtent);
-        if(insertBbox != null){
+        if (insertBbox != null) {
             queryParams.setExtent(insertBbox[0], insertBbox[1], insertBbox[2], insertBbox[3]);
         }
         return queryParams;
@@ -655,15 +657,26 @@ public class GcCubeServiceImpl implements IGcCubeService {
         if (datetime != null) {
             TimeUtil.DateTimeResult dateTimeResult = timeUtil.parseDateTime(datetime);
             if (dateTimeResult.type.equals(TimeUtil.DateTimeType.DATE_TIME)) {
-                startTime = timeUtil.convertTime(dateTimeResult.value);
-                endTime = timeUtil.convertTime(dateTimeResult.value);
+                // single time
+                String latestTime = gcProductMapper.getLatestTime(queryParams.cubeId(), timeUtil.convertTime(dateTimeResult.value));
+                startTime = latestTime;
+                endTime = latestTime;
             } else if (dateTimeResult.type.equals(TimeUtil.DateTimeType.INTERVAL)) {
                 startTime = timeUtil.convertTime(dateTimeResult.startTime);
                 endTime = timeUtil.convertTime(dateTimeResult.endTime);
             }
-        } else if (coverageSubset != null && coverageSubset.getTemporalSubsetDouble() != null) {
-            startTime = coverageSubset.getTemporalSubsetDouble().get(0);
-            endTime = coverageSubset.getTemporalSubsetDouble().get(1);
+        } else if (coverageSubset != null) {
+            List<String> timeRange = coverageSubset.getTemporalSubsetDouble();
+            if (timeRange != null) {
+                startTime = timeRange.get(0);
+                endTime = timeRange.get(1);
+                // single time
+                if(startTime.equals(endTime)){
+                    String latestTime = gcProductMapper.getLatestTime(queryParams.cubeId(), startTime);
+                    startTime = latestTime;
+                    endTime = latestTime;
+                }
+            }
         } else {
             // 获取整个Cube的时间
             startTime = cubeStartTime;
@@ -738,7 +751,7 @@ public class GcCubeServiceImpl implements IGcCubeService {
         try {
             QueryParams queryParams = getQueryParams(cubeName, bbox, datetime, coverageSubset, f);
             String processName = "Coverage";
-            if(checkQueryParams(queryParams, jobId, processName)){
+            if (checkQueryParams(queryParams, jobId, processName)) {
                 return true;
             }
             queryParams.setPolygon(null);
@@ -813,6 +826,10 @@ public class GcCubeServiceImpl implements IGcCubeService {
     public Boolean executeWorkflowByCoverage(String workflowJSON, String jobId, String cubeName, String bbox, String datetime, CoverageSubset coverageSubset, String outputDir, String f) {
         try {
             QueryParams queryParams = getQueryParams(cubeName, bbox, datetime, coverageSubset, f);
+            String processName = "WorkflowCollection";
+            if (checkQueryParams(queryParams, jobId, processName)) {
+                return true;
+            }
             queryParams.setPolygon(null);
             WorkflowCollectionParam workflowCollectionParam = new WorkflowCollectionParam();
             workflowCollectionParam.setQueryParams(queryParams);
@@ -841,7 +858,6 @@ public class GcCubeServiceImpl implements IGcCubeService {
                 workflowCollectionParam.setScaleFactor(Option.empty());
             }
             workflowCollectionParam.setImageFormat(f);
-            String processName = "WorkflowCollection";
             redisUtil.saveKeyValue(processName + "_" + jobId + "_state", "STARTED,0%", 60 * 10);
 //            sparkApplicationService.submitGDCWorkflow(sparkAppParas, "WorkflowCollection", workflowJSON, jobId, outputDir, "true", workflowCollectionParam.toJSONString());
             sparkApplicationService.submitGDCWorkflowByLivy(jobId, "WorkflowCollection", workflowJSON, outputDir, "true", workflowCollectionParam.toJSONString());
@@ -879,6 +895,7 @@ public class GcCubeServiceImpl implements IGcCubeService {
                         break;
                     case "FAILED":
                     case "TIME_CANCEL":
+                    case "LIMIT_EXCEED":
                         timer.cancel();
                         condition[1] = true;
                         break;
@@ -900,18 +917,17 @@ public class GcCubeServiceImpl implements IGcCubeService {
     }
 
 
-    public Boolean checkQueryParams(QueryParams queryParams, String jobId, String processName){
-        if(queryParams.getStartTime().equals("") || queryParams.getEndTime().equals("")){
+    public Boolean checkQueryParams(QueryParams queryParams, String jobId, String processName) {
+        if (queryParams.getStartTime().equals("") || queryParams.getEndTime().equals("")) {
             redisUtil.saveKeyValue(processName + "_" + jobId + "_state", "SpatialOut,0%", 60 * 10);
             return true;
-        }else if(queryParams.getExtentCoordinates().size() == 0){
+        } else if (queryParams.getExtentCoordinates().size() == 0) {
             redisUtil.saveKeyValue(processName + "_" + jobId + "_state", "TimeOut,0%", 60 * 10);
             return true;
         } else {
             return false;
         }
     }
-
 
 
 }

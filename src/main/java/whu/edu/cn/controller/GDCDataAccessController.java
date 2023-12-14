@@ -26,7 +26,9 @@ import whu.edu.cn.exception.GDCException;
 import whu.edu.cn.service.IExceptionService;
 import whu.edu.cn.service.IGcCubeService;
 import whu.edu.cn.service.ISTACService;
+import whu.edu.cn.service.impl.GcWorkflowServiceImpl;
 import whu.edu.cn.util.FileUtil;
+import whu.edu.cn.util.LivyUtil;
 import whu.edu.cn.util.RedisUtil;
 
 import javax.annotation.Resource;
@@ -49,6 +51,9 @@ public class GDCDataAccessController {
     private IGcCubeService cubeService;
 
     @Resource
+    private GcWorkflowServiceImpl gcWorkflowService;
+
+    @Resource
     private FileUtil fileUtil;
 
     @Resource
@@ -62,6 +67,9 @@ public class GDCDataAccessController {
 
     @Resource
     private Address address;
+
+    @Resource
+    private LivyUtil livyUtil;
 
     @Resource
     private IExceptionService exceptionService;
@@ -217,9 +225,11 @@ public class GDCDataAccessController {
     public ResponseEntity<?> getCollection(@PathVariable String collectionId) {
         if (collectionId.contains("temp")) {
             CollectionInfo modifiedCollection = cubeService.getWorkflowCollectionInfo(collectionId);
+            if (modifiedCollection == null) return ResponseEntity.notFound().build();
             return new ResponseEntity<>(modifiedCollection, HttpStatus.OK);
         } else {
             Collection collection = stacService.getSTACCollection(collectionId);
+            if (collection == null) return ResponseEntity.notFound().build();
             return new ResponseEntity<>(collection, HttpStatus.OK);
         }
 
@@ -229,6 +239,7 @@ public class GDCDataAccessController {
     @GetMapping(value = "/collections/{collectionId}/queryables")
     public ResponseEntity<Queryables> getCollectionQueryables(@PathVariable String collectionId) {
         Queryables queryables = stacService.getSTACQueryables(collectionId);
+        if (queryables == null) return ResponseEntity.notFound().build();
         return new ResponseEntity<>(queryables, HttpStatus.OK);
     }
 
@@ -246,6 +257,7 @@ public class GDCDataAccessController {
                                                         @RequestParam(value = "limit", required = false, defaultValue = "10") Integer limit,
                                                         @RequestParam(value = "pageNum", required = false, defaultValue = "1") @ApiIgnore Integer pageNum) {
         STACItems items = stacService.getSTACItems(collectionId, bbox, filter, datetime, pageNum, limit);
+        if (items == null) return ResponseEntity.notFound().build();
         return new ResponseEntity<>(items, HttpStatus.OK);
     }
 
@@ -253,6 +265,7 @@ public class GDCDataAccessController {
     @GetMapping(value = "/collections/{collectionId}/items/{featureId}")
     public ResponseEntity<STACItem> getCollectionItems(@PathVariable String collectionId, @PathVariable String featureId) {
         STACItem item = stacService.getSTACItem(collectionId, featureId);
+        if (item == null) return ResponseEntity.notFound().build();
         return new ResponseEntity<>(item, HttpStatus.OK);
     }
 
@@ -294,7 +307,6 @@ public class GDCDataAccessController {
             } else {
                 return ResponseEntity.status(500).build();
             }
-
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -377,10 +389,13 @@ public class GDCDataAccessController {
                 // hard code
                 coverageSubset.setProperties(null);
                 String workflowJson = redisUtil.getValueByKey(collectionId);
+                if (workflowJson == null)
+                    return ResponseEntity.status(500).body("The maximum retention period has been exceeded.");
                 String secondLevelDir = UUID.randomUUID().toString();
                 Random random = new Random();
                 JSONObject dagObj = GDCTrigger.runMetaAnalysis(workflowJson, Integer.toString(random.nextInt()));
                 ModifyParam modifyParam = dagObj.toJavaObject(ModifyParam.class);
+                coverageSubset = gcWorkflowService.modifyProperties(coverageSubset, modifyParam);
                 String outputDir = address.getLocalDataRoot() + collectionId.replace("temp_", "") + "/" + secondLevelDir + "/";
                 File jobIdFile = new File(address.getLocalDataRoot() + collectionId.replace("temp_", ""));
                 if (!jobIdFile.exists()) jobIdFile.mkdir();
@@ -389,35 +404,44 @@ public class GDCDataAccessController {
                 isSuccess = cubeService.executeWorkflowByCoverage(workflowJson, collectionId.replace("temp_", ""), modifyParam.getCollection(), bbox, datetime, coverageSubset, outputDir, f);
                 log.info("isSuccess: " + isSuccess);
                 if (isSuccess) {
-                    String resultPath = fileUtil.matchResultFile(outputDir);
-                    if (resultPath != null) {
-                        return fileUtil.downloadFile(resultPath);
-                    } else {
-                        return ResponseEntity.status(500).body("An error occurred during processing, result path is null");
-                    }
-                } else {
-                    return ResponseEntity.status(500).body("An error occurred during processing");
-                }
-            } else {
-                String jobId = UUID.randomUUID().toString();
-                String outputDir = address.getLocalDataRoot() + jobId + "/";
-                File jobIdFile = new File(address.getLocalDataRoot() + jobId);
-                if (!jobIdFile.exists()) jobIdFile.mkdir();
-                isSuccess = cubeService.getCoverageBySubmitSpark(collectionId, jobId, bbox, datetime, coverageSubset, outputDir, f);
-                if (isSuccess) {
-                    GDCException coverageException = exceptionService.checkQueryParams("Coverage_" + jobId+ "_state");
-                    if(coverageException.getFlag()){
+                    GDCException coverageException = exceptionService.checkQueryParams("WorkflowCollection_" + collectionId.replace("temp_", "") + "_state");
+                    if (coverageException.getFlag()) {
                         return ResponseEntity.status(coverageException.getCode()).body(coverageException.getMessage());
                     }
                     String resultPath = fileUtil.matchResultFile(outputDir);
                     if (resultPath != null) {
                         return fileUtil.downloadFile(resultPath);
                     } else {
-                        return ResponseEntity.status(500).body("An error occurred retrieving data");
+                        return ResponseEntity.status(500).body("An error occurred during processing, the data selected may be empty or the processing used may not be compatible with the data.");
                     }
                 } else {
-                    GDCException coverageException = exceptionService.submitCoverageTask("Coverage_" + jobId+ "_state");
+                    GDCException coverageException = exceptionService.submitCoverageTask("WorkflowCollection_" + collectionId.replace("temp_", "") + "_state");
                     return ResponseEntity.status(coverageException.getCode()).body(coverageException.getMessage());
+                }
+            } else {
+                if (livyUtil.isAvailableSession()) {
+                    String jobId = UUID.randomUUID().toString();
+                    String outputDir = address.getLocalDataRoot() + jobId + "/";
+                    File jobIdFile = new File(address.getLocalDataRoot() + jobId);
+                    if (!jobIdFile.exists()) jobIdFile.mkdir();
+                    isSuccess = cubeService.getCoverageBySubmitSpark(collectionId, jobId, bbox, datetime, coverageSubset, outputDir, f);
+                    if (isSuccess) {
+                        GDCException coverageException = exceptionService.checkQueryParams("Coverage_" + jobId + "_state");
+                        if (coverageException.getFlag()) {
+                            return ResponseEntity.status(coverageException.getCode()).body(coverageException.getMessage());
+                        }
+                        String resultPath = fileUtil.matchResultFile(outputDir);
+                        if (resultPath != null) {
+                            return fileUtil.downloadFile(resultPath);
+                        } else {
+                            return ResponseEntity.status(500).body("An error occurred retrieving data");
+                        }
+                    } else {
+                        GDCException coverageException = exceptionService.submitCoverageTask("Coverage_" + jobId + "_state");
+                        return ResponseEntity.status(coverageException.getCode()).body(coverageException.getMessage());
+                    }
+                } else {
+                    return ResponseEntity.status(429).body("Too many requests have been sent. Please try again later.");
                 }
             }
         } catch (Exception e) {

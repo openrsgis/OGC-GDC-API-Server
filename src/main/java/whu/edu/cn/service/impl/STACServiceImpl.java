@@ -2,6 +2,7 @@ package whu.edu.cn.service.impl;
 
 import java.sql.Timestamp;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.session.RowBounds;
 //import org.geotools.filter.text.cql2.CQL;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,6 +32,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class STACServiceImpl implements ISTACService {
 
@@ -79,18 +81,27 @@ public class STACServiceImpl implements ISTACService {
     @Override
     public Collection getSTACCollection(String collectionName) {
         GcCube cube = gcCubeMapper.getCubeByName(collectionName);
+        if(cube == null){
+            log.info(collectionName + " is not be found in the backend");
+            return null;
+        }
         return cube2STACCollection(cube);
     }
 
     @Override
     public Queryables getSTACQueryables(String collectionName) {
         GcCube cube = gcCubeMapper.getCubeByName(collectionName);
+        if(cube == null){
+            log.info(collectionName + " is not be found in the backend");
+            return null;
+        }
         return cube2Queryables(cube);
     }
 
     @Override
     public STACItems getSTACItems(String collectionName, String bbox, String filter, String datetime, int pageNum, int pageSize) {
         GcCube cube = gcCubeMapper.getCubeByName(collectionName);
+        if(cube == null) return null;
         String WKT = null;
         Timestamp startTime = null;
         Timestamp endTime = null;
@@ -119,6 +130,7 @@ public class STACServiceImpl implements ISTACService {
     @Override
     public STACItem getSTACItem(String collectionName, String itemName) {
         GcCube cube = gcCubeMapper.getCubeByName(collectionName);
+        if(cube == null) return null;
         return cube2STACItem(cube, itemName);
     }
 

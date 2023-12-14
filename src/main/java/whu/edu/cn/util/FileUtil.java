@@ -72,7 +72,7 @@ public class FileUtil {
      * @return a ResponseEntity object with the downloaded file as the body and a content disposition header that specifies that the file should be downloaded as an attachment, or a not found status if the file does not exist
      * @throws MalformedURLException if the file path is not a valid URL
      */
-    public ResponseEntity<Resource> downloadFile(String filePath) throws MalformedURLException {
+    public ResponseEntity<?> downloadFile(String filePath) throws MalformedURLException {
         Path file = Paths.get(filePath);
         Resource resource = new UrlResource(file.toUri());
         if (resource.exists()) {
@@ -82,7 +82,7 @@ public class FileUtil {
 //                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
                     .body(resource);
         } else {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(500).body("An error occurred during processing, the data selected may be empty or the processing used may not be compatible with the data.");
         }
     }
 

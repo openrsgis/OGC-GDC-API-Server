@@ -216,7 +216,7 @@ public class CoverageController {
      */
     @ApiOperation(value = "Description of a coverage", notes = "Return the coverage")
     @GetMapping(value = "/collections/{collectionId}/coverage")
-    public ResponseEntity<org.springframework.core.io.Resource> getCoverage(@PathVariable("collectionId") String collectionId,
+    public ResponseEntity<?> getCoverage(@PathVariable("collectionId") String collectionId,
                                                         @RequestParam(value = "bbox", required = false) String bbox,
                                                         @RequestParam(value = "datetime", required = false) String datetime,
                                                         @RequestParam(value = "subset", required = false) String subset,
@@ -284,7 +284,7 @@ public class CoverageController {
      */
     @ApiOperation(value = "Description of a coverage", notes = "Return the coverage")
     @GetMapping(value = "/collections/{collectionId}/coverage/rangeset")
-    public ResponseEntity<org.springframework.core.io.Resource> getCoverageRangeSet(@PathVariable("collectionId") String collectionId,
+    public ResponseEntity<?> getCoverageRangeSet(@PathVariable("collectionId") String collectionId,
                                                                                     @RequestParam(value = "bbox", required = false) String bbox,
                                                                                     @RequestParam(value = "datetime", required = false) String datetime,
                                                                                     @RequestParam(value = "subset", required = false) String subset,

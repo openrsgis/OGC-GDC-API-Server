@@ -74,4 +74,9 @@ public class GcProductServiceImpl extends ServiceImpl<GcProductMapper, GcProduct
     public List<GcProduct> getProductFromCombinedParam(String combinedParam, String cubeId) {
         return gcProductMapper.getProductFromCombinedParam(combinedParam, cubeId);
     }
+
+    @Override
+    public String getLatestTime(String cubeId, String  time){
+        return gcProductMapper.getLatestTime(cubeId, time);
+    }
 }

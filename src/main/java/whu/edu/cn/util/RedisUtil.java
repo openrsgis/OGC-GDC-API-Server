@@ -123,4 +123,23 @@ public class RedisUtil {
             return false;
         }
     }
+
+    /**
+     * 判断 Redis 中是否存在某个 key
+     *
+     * @param key key
+     * @return true 如果存在，false 如果不存在
+     */
+    public boolean keyExists(String key) {
+        try {
+            Jedis jedis = jedisPool.getResource();
+            boolean exists = jedis.exists(key);
+            jedis.close();
+            return exists;
+        } catch (Exception e) {
+            log.error("判断key:" + key + "是否存在时出错");
+            e.printStackTrace();
+            return false;
+        }
+    }
 }

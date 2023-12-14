@@ -25,6 +25,7 @@ import whu.edu.cn.config.spark.SparkAppParas;
 import whu.edu.cn.entity.process.*;
 import whu.edu.cn.service.ISparkApplicationService;
 import whu.edu.cn.util.FileUtil;
+import whu.edu.cn.util.LivyUtil;
 import whu.edu.cn.util.RedisUtil;
 
 /**
@@ -39,16 +40,24 @@ public class GDCProcessController {
 
     @Autowired
     private ISparkApplicationService sparkApplicationService;
+
     @Autowired
     SparkAppParas sparkAppParas;
+
     @Autowired
     Address address;
+
     @Autowired
     private ResourceLoader resourceLoader;
+
     @Autowired
     private RedisUtil redisUtil;
+
     @Autowired
     private FileUtil fileUtil;
+
+    @Autowired
+    private LivyUtil livyUtil;
 
     /**
      * List the processes this API offers.
@@ -129,28 +138,32 @@ public class GDCProcessController {
         log.info(processName + " process is runing...");
         String jobId = UUID.randomUUID().toString();
         if (response == null) {
-            String localOutputDir = address.getLocalDataRoot() + jobId + "/";
-            File jobIdFile = new File(address.getLocalDataRoot() + jobId);
-            if (!jobIdFile.exists()) jobIdFile.mkdir();
-            Job job = new Job();
-            job.setProcessID(processName);
-            job.setJobID(jobId);
-            job.setStatus("accepted");
-            job.setMessage("Process started");
-            job.setProgress(0);
-            LocalDateTime now = LocalDateTime.now();
-            String formatted = now.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-            job.setCreated(formatted);
-            job.setLinks(Collections.singletonList(new Link(address.getGdcApiUrl() + "/jobs/" + jobId,
-                    "status", "application/json", "Job status")));
-            redisUtil.saveKeyValue("currentJob", jobId, 60 * 60 * 24);
-            redisUtil.saveKeyValue(jobId, processName, 60 * 60 * 24);
-            redisUtil.saveKeyValue(processName + "_" + jobId + "_state", "STARTED,0%", 60 * 60 * 24);
-            redisUtil.saveKeyValue(processName + "_" + jobId, JSON.toJSONString(job), 60 * 60 * 24);
-            String processRequestStr = JSON.toJSONString(processRequestBody);
-//            sparkApplicationService.submitGDCWorkflow(sparkAppParas, processName, processRequestStr, jobId, localOutputDir, "false", "");
-            sparkApplicationService.submitGDCWorkflowByLivy(jobId, processName, processRequestStr, localOutputDir, "false", "");
-            return ResponseEntity.status(201).body(job);
+            if (livyUtil.isAvailableSession()) {
+                String localOutputDir = address.getLocalDataRoot() + jobId + "/";
+                File jobIdFile = new File(address.getLocalDataRoot() + jobId);
+                if (!jobIdFile.exists()) jobIdFile.mkdir();
+                Job job = new Job();
+                job.setProcessID(processName);
+                job.setJobID(jobId);
+                job.setStatus("accepted");
+                job.setMessage("Process started");
+                job.setProgress(0);
+                LocalDateTime now = LocalDateTime.now();
+                String formatted = now.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                job.setCreated(formatted);
+                job.setLinks(Collections.singletonList(new Link(address.getGdcApiUrl() + "/jobs/" + jobId,
+                        "status", "application/json", "Job status")));
+                redisUtil.saveKeyValue("currentJob", jobId, 60 * 60 * 24);
+                redisUtil.saveKeyValue(jobId, processName, 60 * 60 * 24);
+                redisUtil.saveKeyValue(processName + "_" + jobId + "_state", "STARTED,0%", 60 * 60 * 24);
+                redisUtil.saveKeyValue(processName + "_" + jobId, JSON.toJSONString(job), 60 * 60 * 24);
+                String processRequestStr = JSON.toJSONString(processRequestBody);
+                sparkApplicationService.submitGDCWorkflowByLivy(jobId, processName, processRequestStr, localOutputDir, "false", "");
+                return ResponseEntity.status(201).header("Location", address.getGdcApiUrl() + "/jobs/" + jobId).body(job);
+            } else {
+                return ResponseEntity.status(429).body("Too many requests have been sent. Please try again later.");
+            }
+
         } else if (response.equals("collection")) {
             String tempCollection = "temp_" + jobId;
             redisUtil.saveKeyValue(tempCollection, JSON.toJSONString(processRequestBody), 60 * 60 * 24);
@@ -198,7 +211,7 @@ public class GDCProcessController {
         if (job != null) {
             return ResponseEntity.ok(job);
         } else {
-            return ResponseEntity.status(500).body(jobId + "has been timeout");
+            return ResponseEntity.status(404).body(jobId + "has been timeout or is invalid");
         }
     }
 
@@ -215,14 +228,21 @@ public class GDCProcessController {
         }
         String jobStatus = redisUtil.getValueByKey(processName + "_" + jobId + "_state");
         String jobStr = redisUtil.getValueByKey(processName + "_" + jobId);
+        String status = null;
+        String message = null;
+        String statusRet = null;
+        Job job = JSON.parseObject(jobStr, Job.class);
         if (jobStr == null || jobStatus == null) {
             log.error(jobId + "has been timeout");
             return null;
+        } else if (redisUtil.keyExists(processName + "_" + jobId + "_state_spark")) {
+            statusRet = redisUtil.getValueByKey(processName + "_" + jobId + "_state_spark").split(",")[0];
+            if (statusRet.equals("LIMIT_EXCEED") || statusRet.equals("TIME_CANCEL")) {
+                status = "failed";
+                message = "The data involved in the calculation exceeds the maximum limit of 300MB. Please narrow down the scope.";
+            }
         } else {
-            String status;
-            String message;
-            String statusRet = jobStatus.split(",")[0];
-            Job job = JSON.parseObject(jobStr, Job.class);
+            statusRet = jobStatus.split(",")[0];
             switch (statusRet) {
                 case "STARTED":
                 case "CONNECTED":
@@ -235,32 +255,45 @@ public class GDCProcessController {
                     message = "Process is running";
                     break;
                 case "FINISHED":
-                    status = "successful";
-                    message = "Process is executed successfully";
+                    String outputDir = address.getLocalDataRoot() + jobId + "/";
+                    String resultPath = fileUtil.matchResultFile(outputDir);
+                    if (resultPath == null) {
+                        log.info("No result files");
+                        status = "failed";
+                        message = "Error in processing";
+                    }else{
+                        status = "successful";
+                        message = "Process is executed successfully";
+                    }
                     break;
                 case "FAILED":
                     status = "failed";
                     message = "Process failed";
+                    break;
+                case "TIME_CANCEL":
+                case "LIMIT_EXCEED":
+                    status = "failed";
+                    message = "The data involved in the calculation exceeds the maximum limit of 300MB. Please narrow down the scope.";
                     break;
                 default:
                     status = "dismissed";
                     message = "Process dismissed";
                     break;
             }
-            job.setProcessID(processName);
-            job.setStatus(status);
-            job.setMessage(message);
-            job.setProgress(Integer.valueOf(jobStatus.split(",")[1].replace("%", "")));
-            List<Link> links = new ArrayList<>();
-            links.add(new Link(address.getGdcApiUrl() + "/jobs/" + jobId,
-                    "status", "application/json", "Job status"));
-            if (statusRet.equals("FINISHED")) {
-                links.add(new Link(address.getGdcApiUrl() + "/jobs/" + jobId + "/results",
-                        "http://www.opengis.net/def/rel/ogc/1.0/results", "application/json", "Job result"));
-            }
-            job.setLinks(links);
-            return job;
         }
+        job.setProcessID(processName);
+        job.setStatus(status);
+        job.setMessage(message);
+        job.setProgress(Integer.valueOf(jobStatus.split(",")[1].replace("%", "")));
+        List<Link> links = new ArrayList<>();
+        links.add(new Link(address.getGdcApiUrl() + "/jobs/" + jobId,
+                "status", "application/json", "Job status"));
+        if (status != null && status.equals("successful")) {
+            links.add(new Link(address.getGdcApiUrl() + "/jobs/" + jobId + "/results",
+                    "http://www.opengis.net/def/rel/ogc/1.0/results", "application/tiff; application=geotiff", "Job result"));
+        }
+        job.setLinks(links);
+        return job;
     }
 
     /**
@@ -293,7 +326,7 @@ public class GDCProcessController {
 //                return ResponseEntity.ok(resultMap);
                 return fileUtil.downloadFile(resultPath);
             } else {
-                return ResponseEntity.status(500).body("An error occurred  retrieving data");
+                return ResponseEntity.status(500).body("An error occurred during processing, the data selected may be empty or the processing used may not be compatible with the data.");
             }
         } else {
             return ResponseEntity.status(500).body("An error occurred during job " + jobId + " processing");

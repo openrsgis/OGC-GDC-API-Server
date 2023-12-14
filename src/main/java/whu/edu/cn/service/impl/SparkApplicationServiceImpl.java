@@ -208,7 +208,8 @@ public class SparkApplicationServiceImpl implements ISparkApplicationService {
                                         String collectionParam){
         String code = "whu.edu.cn.application.gdc.gdcCoverage.runGetCoverage(sc," +
                 "\"" + outputDir + "\"," +
-                "\"" + escapeString(collectionParam) + "\"" +
+                "\"" + escapeString(collectionParam) + "\"," +
+                "\"" + jobID + "\"" +
                 ")";
         livyUtil.livyTrigger(code, jobID, functionName);
     }
@@ -221,7 +222,9 @@ public class SparkApplicationServiceImpl implements ISparkApplicationService {
                 "\"" + escapeString(paramJson) + "\"," +
                 "\"" + escapeString(outputDir) + "\"," +
                 "\"" + escapeString(isCollection) + "\"," +
-                "\"" + escapeString(collectionParam)+ "\"" +
+                "\"" + escapeString(collectionParam)+ "\"," +
+                "\"" + functionName + "\"," +
+                "\"" + jobID + "\"" +
                 ")";
         livyUtil.livyTrigger(code, jobID, functionName);
     }
